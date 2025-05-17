@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import AnimatedLogo from "@/components/animated-logo";
+import { ConnectKitButton } from "connectkit";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -87,10 +88,28 @@ export default function OnboardingPage() {
           className="space-y-4 pt-8"
         >
           <Button
-            onClick={() => router.push("/verify-world")}
+            onClick={() => router.push("/feed")}
             className="w-full py-6 text-lg brutalist-button hover:scale-105 transition-all duration-300"
           >
-            VERIFY WITH WORLD
+            Launch Dapp
+          </Button>
+          <ConnectKitButton />
+        </motion.div>
+        <motion.div
+          className="fixed bottom-4 right-4 z-50"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            className="brutalist-box bg-white dark:bg-black text-xs"
+            onClick={() => {
+              localStorage.setItem("offchainMode", "true");
+              router.push("/profile");
+            }}
+          >
+            Offchain Mode
           </Button>
         </motion.div>
       </motion.div>

@@ -36,33 +36,33 @@ export default function AnimatedLogo({
       <h1
         className={`${textSize} font-bold tracking-tight text-black dark:text-white`}
       >
-        Deep
-        <motion.span
-          className="relative inline-block text-red-500"
-          initial={{ opacity: 1 }}
-          animate={{ opacity: showTruth ? 0 : 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          Fake
-          {animationComplete && (
-            <motion.div
-              className="absolute left-0 top-1/2 w-0 h-[3px] bg-[#10b981]"
-              initial={{ width: 0 }}
-              animate={{ width: "100%" }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-            />
-          )}
-        </motion.span>
-        <motion.span
-          className={`absolute text-[#10b981] ${
-            !compact ? "-ml-20" : "-ml-16"
-          }`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: showTruth ? 1 : 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          Truth
-        </motion.span>
+        <span className="relative">
+          <motion.span
+            className="relative inline-block text-red-500"
+            initial={{ opacity: 1 }}
+            animate={{ opacity: showTruth ? 0 : 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            Fake
+            {animationComplete && (
+              <motion.div
+                className="absolute left-0 top-1/2 w-0 h-[3px] bg-[#10b981]"
+                initial={{ width: 0 }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+              />
+            )}
+          </motion.span>
+          <motion.span
+            className="absolute left-0 text-[#10b981]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: showTruth ? 1 : 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            Truth
+          </motion.span>
+        </span>
+        {" Cast"}
       </h1>
     </div>
   );

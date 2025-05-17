@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
-import MiniKitProvider from "@/providers/MinikitProvider";
 import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider } from "@/components/auth-provider";
+import { Web3Provider } from "@/providers/WalletProvider";
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -32,22 +31,20 @@ export default function RootLayout({
           content="black-translucent"
         />
       </head>
-      <MiniKitProvider>
+      <Web3Provider>
         <body
           className={`${spaceGrotesk.className} h-full overflow-hidden overscroll-none`}
         >
-          <AuthProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="dark"
-              enableSystem={false}
-              disableTransitionOnChange
-            >
-              {children}
-            </ThemeProvider>
-          </AuthProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem={false}
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
         </body>
-      </MiniKitProvider>
+        </Web3Provider>
     </html>
   );
 }
