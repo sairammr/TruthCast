@@ -1,22 +1,16 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import MiniKitProvider from "@/providers/MinikitProvider";
-
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+import { ThemeProvider } from "@/components/theme-provider";
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
   title: "DeepTruth",
-  description: "OnlyHumans",
+  description: "Share your deep truths with the world",
 };
 
 export default function RootLayout({
@@ -27,10 +21,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <MiniKitProvider>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-          {children}
+        <body className={spaceGrotesk.className}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem={false}
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
         </body>
       </MiniKitProvider>
     </html>
