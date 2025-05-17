@@ -19,9 +19,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="h-full overflow-hidden">
+      <head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+        />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
+      </head>
       <MiniKitProvider>
-        <body className={spaceGrotesk.className}>
+        <body
+          className={`${spaceGrotesk.className} h-full overflow-hidden overscroll-none`}
+        >
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
