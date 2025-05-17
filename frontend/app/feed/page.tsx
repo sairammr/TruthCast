@@ -6,40 +6,58 @@ import { motion } from "framer-motion";
 import AnimatedLogo from "@/components/animated-logo";
 import { Video } from "@/types/video";
 import Navigation from "@/components/navigation";
+import { fetchPosts } from "@lens-protocol/client/actions";
+import { evmAddress } from "@lens-protocol/client";
+import { lensClient } from "@/lib/lens";
+import { Post } from "@lens-protocol/client";
+
+interface VideoMetadata {
+  __typename: "VideoMetadata";
+  video?: {
+    item: string;
+  };
+  content?: string;
+  title?: string;
+  tags?: string[];
+}
 
 export default function FeedPage() {
   const [videos, setVideos] = useState<Video[]>([]);
 
   useEffect(() => {
-    // Mock video data
-    const mockVideos = [
-      {
-        id: 1,
-        username: "truthseeker",
-        videoUrl: "/placeholder.svg?height=720&width=1280",
-        caption: "The truth about our society that no one wants to talk about.",
-        likes: 1243,
-        comments: 89,
-      },
-      {
-        id: 2,
-        username: "deepdiver",
-        videoUrl: "/placeholder.svg?height=720&width=1280",
-        caption: "What I discovered after years of research.",
-        likes: 892,
-        comments: 56,
-      },
-      {
-        id: 3,
-        username: "awakened_mind",
-        videoUrl: "/placeholder.svg?height=720&width=1280",
-        caption: "This changed everything I believed in.",
-        likes: 2103,
-        comments: 145,
-      },
-    ];
+    const fetch = async () => {
+      const result = await fetchPosts(lensClient, {
+        filter: {
+          apps: [evmAddress(process.env.NEXT_PUBLIC_LENS_APP_ID || "")]
+        }
+      });
 
-    setVideos(mockVideos);
+      if (result.isOk()) {
+        const { items } = result.value;
+        const formattedVideos = items
+          .filter((post): post is Post => 'metadata' in post && 'stats' in post)
+          .filter((post): post is Post & { metadata: VideoMetadata } => 
+            post.metadata.__typename === "VideoMetadata"
+          )
+          .map((post) => ({
+            id: Number(post.id),
+            username: post.author.username?.localName || "anonymous",
+            videoUrl: post.metadata.video?.item || "",
+            caption: post.metadata.content || "",
+            title: post.metadata.title || "",
+            tags: post.metadata.tags || [],
+            likes: post.stats.upvotes || 0,
+            comments: post.stats.comments || 0,
+            author: {
+              name: post.author.metadata?.name || post.author.username?.localName || "anonymous",
+              bio: post.author.metadata?.bio || "",
+              picture: post.author.metadata?.picture || "",
+            }
+          }));
+        setVideos(formattedVideos);
+      }
+    };
+    fetch();
   }, []);
 
   return (

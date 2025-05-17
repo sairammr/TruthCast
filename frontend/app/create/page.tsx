@@ -20,9 +20,16 @@ import {
   Instagram,
   Loader,
 } from "lucide-react";
+import Navigation from "@/components/navigation";
+import { LensPostVideo } from "@/components/lens-post-video";
+import { useAccount } from "wagmi";
+import { ConnectKitButton } from "connectkit";
 
 // Server URL for steganography API
-const SERVER_URL = "http://localhost:5001";
+// Fix: Use the correct API endpoint with path
+const SERVER_URL =
+  process.env.NEXT_PUBLIC_SERVER_URL ||
+  "";
 
 // Hardcoded secret message
 const HARDCODED_SECRET_MESSAGE = "abcdefghijklmnopqrstuvwxyz";
@@ -41,22 +48,24 @@ export default function CreatePage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [videoMimeType, setVideoMimeType] = useState<string>("video/webm");
   const [uploadedVideoData, setUploadedVideoData] = useState<Blob | null>(null);
-  const timerRef = useRef<NodeJS.Timeout>();
-
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  console.log(uploadedVideoData);
   // States for API integration and sharing
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [videoTitle, setVideoTitle] = useState("My Deep Truth");
-  console.log(uploadedVideoData);
+
   // Steganography specific states
   const [encryptedVideoData, setEncryptedVideoData] = useState<{
-    mov: string;
     mp4: string;
-    mov_filename: string;
     mp4_filename: string;
   } | null>(null);
   const [activeFormat, setActiveFormat] = useState<"mp4" | "mov">("mp4");
+
+  // Add Lens Protocol related state
+  const { isConnected } = useAccount();
+  const [showLensPostModal, setShowLensPostModal] = useState(false);
 
   // Clean up resources when component unmounts
   useEffect(() => {
@@ -153,8 +162,7 @@ export default function CreatePage() {
   const getCurrentVideoUrl = (): string | null => {
     if (!encryptedVideoData) return previewUrl;
 
-    const base64Data =
-      activeFormat === "mov" ? encryptedVideoData.mov : encryptedVideoData.mp4;
+    const base64Data = encryptedVideoData.mp4;
     const mimeType = activeFormat === "mov" ? "video/quicktime" : "video/mp4";
     const blob = base64ToBlob(base64Data, mimeType);
     return URL.createObjectURL(blob);
@@ -311,7 +319,7 @@ export default function CreatePage() {
     });
 
     try {
-      // Call the steganography API endpoint
+      // Fixed API endpoint - explicitly include /encrypt path
       const response = await fetch(`${SERVER_URL}/encrypt`, {
         method: "POST",
         body: formData,
@@ -324,6 +332,7 @@ export default function CreatePage() {
 
       // Get response with video formats
       const result = await response.json();
+      console.log("API response:", result);
 
       // Set upload to complete
       setUploadProgress(100);
@@ -331,9 +340,9 @@ export default function CreatePage() {
 
       // Store the encrypted video data
       setEncryptedVideoData({
-        mov: result.mov,
+      
         mp4: result.mp4,
-        mov_filename: result.mov_filename || "deeptruth.mov",
+    
         mp4_filename: result.mp4_filename || "deeptruth.mp4",
       });
 
@@ -365,17 +374,13 @@ export default function CreatePage() {
   const downloadVideo = () => {
     if (!encryptedVideoData) return;
 
-    const base64Data =
-      activeFormat === "mov" ? encryptedVideoData.mov : encryptedVideoData.mp4;
+    const base64Data = encryptedVideoData.mp4;
 
     const mimeType = activeFormat === "mov" ? "video/quicktime" : "video/mp4";
 
     const filename =
-      activeFormat === "mov"
-        ? encryptedVideoData.mov_filename ||
-          `${videoTitle.replace(/\s+/g, "_")}.mov`
-        : encryptedVideoData.mp4_filename ||
-          `${videoTitle.replace(/\s+/g, "_")}.mp4`;
+      encryptedVideoData.mp4_filename ||
+      `${videoTitle.replace(/\s+/g, "_")}.mp4`;
 
     const blob = base64ToBlob(base64Data, mimeType);
     const url = URL.createObjectURL(blob);
@@ -437,6 +442,16 @@ export default function CreatePage() {
 
   const goToFeed = () => {
     router.push("/feed");
+  };
+
+  // Add function to handle posting to Lens
+  const handlePostToLens = () => {
+    if (!isConnected) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+    
+    setShowLensPostModal(true);
   };
 
   // Determine what view to show
@@ -635,13 +650,67 @@ export default function CreatePage() {
               </Button>
             </div>
 
-            <Button
-              onClick={downloadVideo}
-              className="flex items-center gap-2 w-full bg-[#10b981] hover:bg-[#0d8c6a] text-sm md:text-base"
-            >
-              <Download size={18} />
-              Download {activeFormat.toUpperCase()} Video
-            </Button>
+            <div className="flex flex-col space-y-3">
+              <Button
+                onClick={downloadVideo}
+                className="flex items-center gap-2 w-full bg-[#10b981] hover:bg-[#0d8c6a] text-sm md:text-base"
+              >
+                <Download size={18} />
+                Download {activeFormat.toUpperCase()} Video
+              </Button>
+
+              {/* Add Lens Protocol Post Button */}
+              <Button
+                onClick={handlePostToLens}
+                className="flex items-center gap-2 w-full bg-[#00501E] hover:bg-[#003A15] text-sm md:text-base"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 32 32"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M16 0C7.163 0 0 7.163 0 16C0 24.837 7.163 32 16 32C24.837 32 32 24.837 32 16C32 7.163 24.837 0 16 0ZM11.741 21.333C10.7 21.333 9.778 20.954 9.081 20.256C8.383 19.559 8.004 18.637 8.004 17.596C8.004 16.556 8.383 15.634 9.081 14.936C9.778 14.239 10.7 13.86 11.741 13.86C12.781 13.86 13.703 14.239 14.401 14.936C15.098 15.634 15.477 16.556 15.477 17.596C15.477 18.637 15.098 19.559 14.401 20.256C13.703 20.954 12.781 21.333 11.741 21.333ZM20.259 21.333C19.219 21.333 18.297 20.954 17.599 20.256C16.902 19.559 16.523 18.637 16.523 17.596C16.523 16.556 16.902 15.634 17.599 14.936C18.297 14.239 19.219 13.86 20.259 13.86C21.3 13.86 22.222 14.239 22.919 14.936C23.617 15.634 23.996 16.556 23.996 17.596C23.996 18.637 23.617 19.559 22.919 20.256C22.222 20.954 21.3 21.333 20.259 21.333Z"
+                    fill="currentColor"
+                  />
+                </svg>
+                Post to Lens Protocol
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Lens Protocol Post Modal */}
+        {showLensPostModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="w-full max-w-md">
+              {isConnected ? (
+                <LensPostVideo
+                  videoData={encryptedVideoData}
+                  videoTitle={videoTitle}
+                  onClose={() => setShowLensPostModal(false)}
+                />
+              ) : (
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg">
+                  <h3 className="text-xl font-bold mb-4">Connect Your Wallet</h3>
+                  <p className="mb-4 text-gray-600 dark:text-gray-300">
+                    Connect your wallet to post to Lens Protocol
+                  </p>
+                  <div className="flex justify-center mb-4">
+                    <ConnectKitButton />
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowLensPostModal(false)}
+                    className="w-full"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </>
@@ -649,95 +718,98 @@ export default function CreatePage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-2 md:p-4 bg-[#f5f5f5] dark:bg-black relative overflow-hidden">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="w-full max-w-4xl text-center space-y-4 md:space-y-8 z-10"
-      >
-        {/* Back button to /feed */}
-        <div className="absolute top-2 md:top-4 left-2 md:left-4 z-20">
-          <Button
-            onClick={goToFeed}
-            variant="ghost"
-            size="sm"
-            className="flex items-center text-black dark:text-white hover:bg-gray-200 dark:hover:bg-gray-800 p-1 md:p-2"
-          >
-            <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" />
-            <span className="text-xs md:text-sm">Back</span>
-          </Button>
-        </div>
-
+    <div className="flex flex-col h-full fixed inset-0 bg-[#f5f5f5] dark:bg-black">
+      <Navigation />
+      <div className="flex flex-col items-center justify-center min-h-screen p-2 md:p-4 bg-[#f5f5f5] dark:bg-black relative overflow-hidden">
         <motion.div
-          initial={{ scale: 0.9 }}
-          animate={{ scale: 1 }}
-          transition={{
-            type: "spring",
-            stiffness: 260,
-            damping: 20,
-          }}
-          className="brutalist-box p-3 md:p-6 bg-white dark:bg-black rounded-lg mt-10 md:mt-0"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="w-full max-w-4xl text-center space-y-4 md:space-y-8 z-10"
         >
-          <motion.h1
-            className="text-2xl md:text-4xl font-bold tracking-tight text-black dark:text-white mb-4 md:mb-6"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-          >
-            CREATE YOUR <span className="text-[#10b981]">DEEP TRUTH</span> NOW
-          </motion.h1>
-
-          {/* Main content area - renders different views based on state */}
-          {renderContent()}
-
-          {/* Action buttons */}
-          <div className="flex flex-col space-y-2 md:space-y-4">
-            {!stream && !isUploading && !showShareOptions ? (
-              <Button
-                onClick={() => startCamera()}
-                className="w-full py-3 md:py-6 text-base md:text-lg brutalist-button"
-              >
-                START CAMERA
-              </Button>
-            ) : showPreview && !isUploading && !showShareOptions ? (
-              <div className="flex space-x-2 md:space-x-4">
-                <Button
-                  onClick={retakeVideo}
-                  className="flex-1 py-3 md:py-6 text-base md:text-lg brutalist-button bg-red-500 hover:bg-red-600"
-                >
-                  <X className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" />
-                  RETAKE
-                </Button>
-                <Button
-                  onClick={handleSubmit}
-                  className="flex-1 py-3 md:py-6 text-base md:text-lg brutalist-button"
-                >
-                  <Check className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" />
-                  SUBMIT
-                </Button>
-              </div>
-            ) : stream && !showPreview && !isUploading ? (
-              <Button
-                onClick={isRecording ? stopRecording : startRecording}
-                className={`w-full py-3 md:py-6 text-base md:text-lg brutalist-button ${
-                  isRecording ? "bg-red-500 hover:bg-red-600" : ""
-                }`}
-              >
-                <Video className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" />
-                {isRecording ? "STOP RECORDING" : "START RECORDING"}
-              </Button>
-            ) : showShareOptions ? (
-              <Button
-                onClick={() => router.push("/feed")}
-                className="w-full py-3 md:py-6 text-base md:text-lg brutalist-button"
-              >
-                VIEW ON FEED
-              </Button>
-            ) : null}
+          {/* Back button to /feed */}
+          <div className="absolute top-2 md:top-4 left-2 md:left-4 z-20">
+            <Button
+              onClick={goToFeed}
+              variant="ghost"
+              size="sm"
+              className="flex items-center text-black dark:text-white hover:bg-gray-200 dark:hover:bg-gray-800 p-1 md:p-2"
+            >
+              <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" />
+              <span className="text-xs md:text-sm">Back</span>
+            </Button>
           </div>
+
+          <motion.div
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            transition={{
+              type: "spring",
+              stiffness: 260,
+              damping: 20,
+            }}
+            className="brutalist-box p-3 md:p-6 bg-white dark:bg-black rounded-lg mt-10 md:mt-0"
+          >
+            <motion.h1
+              className="text-2xl md:text-4xl font-bold tracking-tight text-black dark:text-white mb-4 md:mb-6"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              CREATE YOUR <span className="text-[#10b981]">DEEP TRUTH</span> NOW
+            </motion.h1>
+
+            {/* Main content area - renders different views based on state */}
+            {renderContent()}
+
+            {/* Action buttons */}
+            <div className="flex flex-col space-y-2 md:space-y-4">
+              {!stream && !isUploading && !showShareOptions ? (
+                <Button
+                  onClick={() => startCamera()}
+                  className="w-full py-3 md:py-6 text-base md:text-lg brutalist-button"
+                >
+                  START CAMERA
+                </Button>
+              ) : showPreview && !isUploading && !showShareOptions ? (
+                <div className="flex space-x-2 md:space-x-4">
+                  <Button
+                    onClick={retakeVideo}
+                    className="flex-1 py-3 md:py-6 text-base md:text-lg brutalist-button bg-red-500 hover:bg-red-600"
+                  >
+                    <X className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" />
+                    RETAKE
+                  </Button>
+                  <Button
+                    onClick={handleSubmit}
+                    className="flex-1 py-3 md:py-6 text-base md:text-lg brutalist-button"
+                  >
+                    <Check className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" />
+                    SUBMIT
+                  </Button>
+                </div>
+              ) : stream && !showPreview && !isUploading ? (
+                <Button
+                  onClick={isRecording ? stopRecording : startRecording}
+                  className={`w-full py-3 md:py-6 text-base md:text-lg brutalist-button ${
+                    isRecording ? "bg-red-500 hover:bg-red-600" : ""
+                  }`}
+                >
+                  <Video className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" />
+                  {isRecording ? "STOP RECORDING" : "START RECORDING"}
+                </Button>
+              ) : showShareOptions ? (
+                <Button
+                  onClick={() => router.push("/feed")}
+                  className="w-full py-3 md:py-6 text-base md:text-lg brutalist-button"
+                >
+                  VIEW ON FEED
+                </Button>
+              ) : null}
+            </div>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      </div>
     </div>
   );
 }

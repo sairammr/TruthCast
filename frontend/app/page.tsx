@@ -5,9 +5,77 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import AnimatedLogo from "@/components/animated-logo";
 import { ConnectKitButton } from "connectkit";
+import { useEffect, useState } from "react";
+import { useAccount, useWalletClient } from "wagmi";
+import { lensClient } from "@/lib/lens";
+import { signMessageWith } from "@lens-protocol/client/viem";
+import { toast } from "sonner";
+import { evmAddress } from "@lens-protocol/client";
+import { fetchAccount } from "@lens-protocol/client/actions";
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const { address, isConnected } = useAccount();
+  const { data: walletClient } = useWalletClient();
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+
+  // Automatically authenticate with Lens when wallet is connected
+  useEffect(() => {
+    const authenticateWithLens = async () => {
+      if (isConnected && address && walletClient && !isAuthenticating) {
+        try {
+          setIsAuthenticating(true);
+          //check for owner of this wallet address
+          try{
+            const result = await fetchAccount(lensClient, {
+              
+                
+                username: {
+                  localName: "sairammr",
+                },
+              
+            });
+            console.log("result", result);
+            
+          const authenticated = await lensClient.login({
+            accountOwner: {
+              app: "0x6d975C4aD2434F2c5C9213d4dE38AfD63498f37E", // App ID
+              owner: evmAddress(address),
+              account: evmAddress(address),
+            },
+            signMessage: signMessageWith(walletClient),
+          })
+          const sessionClient = authenticated.value;
+          console.log("Lens authentication successful", { sessionClient });
+          toast.success("Connected to Lens Protocol");
+          localStorage.setItem("sessionClient", sessionClient);
+          ;}
+          catch(error){
+            console.error("Error authenticating with Lens:", error);
+            toast.error("Failed to connect to Lens Protocol");
+           // router.push("/register");
+            setIsAuthenticating(false);
+            return;
+          }
+          
+
+        
+
+          // Authentication successful
+         
+          
+          // Optionally redirect to Lens page
+          // router.push("/lens");
+        } catch (error) {
+          console.error("Error authenticating with Lens:", error);
+          toast.error("Failed to connect to Lens Protocol");
+        } finally {
+          setIsAuthenticating(false);
+        }
+      }
+    };
+    authenticateWithLens();
+  }, [isConnected, address, walletClient]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-[#f5f5f5] dark:bg-black relative overflow-hidden">
@@ -94,6 +162,14 @@ export default function OnboardingPage() {
             Launch Dapp
           </Button>
           <ConnectKitButton />
+          {isConnected && (
+            <Button
+              onClick={() => router.push("/lens")}
+              className="w-full bg-[#10b981] hover:bg-[#0d8c6a] text-white"
+            >
+              Lens Profile
+            </Button>
+          )}
         </motion.div>
         <motion.div
           className="fixed bottom-4 right-4 z-50"
