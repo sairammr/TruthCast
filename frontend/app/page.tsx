@@ -88,9 +88,7 @@ export default function OnboardingPage() {
         >
           <Button
             onClick={() => router.push("/verify-world")}
-            className="w-full py-6 text-lg brutalist-button"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
+            className="w-full py-6 text-lg brutalist-button hover:scale-105 transition-all duration-300"
           >
             VERIFY WITH WORLD
           </Button>
