@@ -1,16 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Home, PlusCircle, User } from "lucide-react";
 import VideoCard from "@/components/video-card";
 import { motion } from "framer-motion";
 import AnimatedLogo from "@/components/animated-logo";
 import { Video } from "@/types/video";
+import Navigation from "@/components/navigation";
 
 export default function FeedPage() {
-  const router = useRouter();
   const [videos, setVideos] = useState<Video[]>([]);
 
   useEffect(() => {
@@ -78,52 +75,7 @@ export default function FeedPage() {
         </motion.div>
       </main>
 
-      <nav className="bg-[#f5f5f5] dark:bg-black border-t border-black/10 dark:border-white/10 safe-bottom backdrop-blur-lg bg-opacity-80">
-        <div className="flex justify-around items-center h-16 max-w-md mx-auto px-4">
-          <motion.div
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="w-16 h-16 flex items-center justify-center"
-          >
-            <Button
-              variant="ghost"
-              className="flex flex-col items-center touch-manipulation w-full h-full"
-              onClick={() => router.push("/feed")}
-            >
-              <Home className="h-6 w-6 text-[#10b981]" />
-              <span className="text-xs mt-1 font-bold">FEED</span>
-            </Button>
-          </motion.div>
-
-          <motion.div
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="-mt-6"
-          >
-            <Button
-              className="flex flex-col items-center brutalist-button rounded-full w-14 h-14 p-0 touch-manipulation shadow-lg"
-              onClick={() => router.push("/create")}
-            >
-              <PlusCircle className="h-6 w-6" />
-            </Button>
-          </motion.div>
-
-          <motion.div
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="w-16 h-16 flex items-center justify-center"
-          >
-            <Button
-              variant="ghost"
-              className="flex flex-col items-center touch-manipulation w-full h-full"
-              onClick={() => router.push("/profile")}
-            >
-              <User className="h-6 w-6" />
-              <span className="text-xs mt-1 font-bold">PROFILE</span>
-            </Button>
-          </motion.div>
-        </div>
-      </nav>
+      <Navigation />
     </div>
   );
 }

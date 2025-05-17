@@ -3,51 +3,39 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Settings, Grid, BookMarked, ArrowLeft } from "lucide-react";
+import { Settings, Grid, BookMarked, ArrowLeft, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import VideoThumbnail from "@/components/video-thumbnail";
-import VideoCard from "@/components/video-card";
-import { Video } from "@/types/video";
+import { ethers } from "ethers";
+import Navigation from "@/components/navigation";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [videos, setVideos] = useState<Video[]>([]);
+  // const [videos, setVideos] = useState<Video[]>([]);
   const [selectedVideo, setSelectedVideo] = useState<number | null>(null);
+  const [accountAddress, setAccountAddress] = useState<string>("");
+  const [ensName, setEnsName] = useState<string>("");
 
   useEffect(() => {
-    // Mock video data
-    const mockVideos = [
-      {
-        id: 1,
-        username: "truthseeker",
-        videoUrl: "/placeholder.svg?height=720&width=1280",
-        caption: "The truth about our society that no one wants to talk about.",
-        likes: 1243,
-        comments: 89,
-      },
-      {
-        id: 2,
-        username: "truthseeker",
-        videoUrl: "/placeholder.svg?height=720&width=1280",
-        caption: "What I discovered after years of research.",
-        likes: 892,
-        comments: 56,
-      },
-      {
-        id: 3,
-        username: "truthseeker",
-        videoUrl: "/placeholder.svg?height=720&width=1280",
-        caption: "This changed everything I believed in.",
-        likes: 2103,
-        comments: 145,
-      },
-      // Add more mock videos as needed
-    ];
-
-    setVideos(mockVideos);
+    // Get account address from localStorage
+    const address = localStorage.getItem("accountAddress");
+    if (address) {
+      setAccountAddress(address);
+      // Try to resolve ENS name
+      const provider = new ethers.JsonRpcProvider(
+        "https://worldchain.drpc.org"
+      );
+      provider.lookupAddress(address).then((name) => {
+        if (name) setEnsName(name);
+      });
+    }
   }, []);
+
+  const handleLogout = async () => {
+    localStorage.removeItem("accountAddress");
+    router.push("/");
+  };
 
   return (
     <div className="flex flex-col h-full fixed inset-0 bg-[#f5f5f5] dark:bg-black">
@@ -66,16 +54,28 @@ export default function ProfilePage() {
           <h1 className="text-xl font-bold">
             PRO<span className="text-[#10b981]">FILE</span>
           </h1>
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => router.push("/settings")}
-              className="brutalist-box bg-white dark:bg-black"
-            >
-              <Settings className="h-5 w-5" />
-            </Button>
-          </motion.div>
+          <div className="flex space-x-2">
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.push("/settings")}
+                className="brutalist-box bg-white dark:bg-black"
+              >
+                <Settings className="h-5 w-5" />
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleLogout}
+                className="brutalist-box bg-white dark:bg-black"
+              >
+                <LogOut className="h-5 w-5" />
+              </Button>
+            </motion.div>
+          </div>
         </div>
       </header>
 
@@ -89,32 +89,20 @@ export default function ProfilePage() {
           >
             <Avatar className="w-20 h-20 border-2 border-black dark:border-white mb-4">
               <AvatarImage src="/placeholder.svg?height=80&width=80" />
-              <AvatarFallback>TS</AvatarFallback>
+              <AvatarFallback>
+                {accountAddress.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
             </Avatar>
-            <h2 className="text-xl font-bold">@truthseeker</h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-2 text-center">
-              Seeking and sharing truth through deep research and analysis.
+            {ensName ? (
+              <h2 className="text-xl font-bold">{ensName}</h2>
+            ) : (
+              <h2 className="text-xl font-bold font-mono">
+                {accountAddress.slice(0, 6)}...{accountAddress.slice(-4)}
+              </h2>
+            )}
+            <p className="text-gray-600 dark:text-gray-400 mt-2 text-center font-mono">
+              {accountAddress}
             </p>
-            <div className="flex space-x-8 mt-4">
-              <motion.div className="text-center" whileHover={{ scale: 1.1 }}>
-                <div className="font-bold">23</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Videos
-                </div>
-              </motion.div>
-              <motion.div className="text-center" whileHover={{ scale: 1.1 }}>
-                <div className="font-bold">1.2k</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Followers
-                </div>
-              </motion.div>
-              <motion.div className="text-center" whileHover={{ scale: 1.1 }}>
-                <div className="font-bold">891</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Following
-                </div>
-              </motion.div>
-            </div>
           </motion.div>
 
           <motion.div
@@ -141,7 +129,7 @@ export default function ProfilePage() {
               </TabsList>
               <TabsContent value="videos" className="mt-4">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {videos.map((video, index) => (
+                  {/* {videos.map((video, index) => (
                     <motion.div
                       key={video.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -153,18 +141,26 @@ export default function ProfilePage() {
                         onClick={() => setSelectedVideo(video.id)}
                       />
                     </motion.div>
-                  ))}
+                  ))} */}
                 </div>
               </TabsContent>
               <TabsContent value="saved" className="mt-4">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {/* Saved videos will go here */}
+                  <Button
+                    onClick={() => {
+                      router.push("/upload");
+                    }}
+                  >
+                    trasnaction
+                  </Button>
                 </div>
               </TabsContent>
             </Tabs>
           </motion.div>
         </div>
       </main>
+
+      <Navigation />
 
       {selectedVideo && (
         <motion.div
@@ -181,7 +177,7 @@ export default function ProfilePage() {
             className="w-full max-w-3xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <VideoCard video={videos.find((v) => v.id === selectedVideo)!} />
+            {/* <VideoCard video={videos.find((v) => v.id === selectedVideo)!} /> */}
           </motion.div>
         </motion.div>
       )}
