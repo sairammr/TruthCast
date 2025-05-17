@@ -228,3 +228,97 @@ def encrypt_endpoint():
                 shutil.rmtree(temp_dir)
         except Exception as cleanup_error:
             print(f"Error cleaning up: {cleanup_error}")
+
+def decode_video(video_path, temp_dir):
+    """Decode hidden text from video"""
+    # Create a temporary directory
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir)
+    
+    # Extract frames using OpenCV directly
+    cap = cv2.VideoCapture(video_path)
+    number_of_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+    print(f"[INFO] Video has {number_of_frames} frames")
+    
+    # Try the first 15 frames for simplicity in this basic version
+    frames_to_check = list(range(15))
+    
+    # Process frames
+    decoded = {}
+    
+    for frame_number in frames_to_check:
+        if frame_number >= number_of_frames:
+            continue
+            
+        # Jump to the specific frame
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+        ret, frame = cap.read()
+        if not ret:
+            continue
+        
+        encoded_frame_file_name = os.path.join(temp_dir, f"{frame_number}-enc.png")
+        cv2.imwrite(encoded_frame_file_name, frame)
+        
+        # Try to decode the frame
+        try:
+            clear_message = lsb.reveal(encoded_frame_file_name)
+            if clear_message:
+                decoded[frame_number] = clear_message
+                print(f"Frame {frame_number} DECODED: {clear_message}")
+        except Exception as e:
+            print(f"Error decoding frame {frame_number}: {e}")
+    
+    # Arrange and decrypt the message
+    res = ""
+    for fn in sorted(decoded.keys()):
+        res += decoded[fn]
+    
+    if not res:
+        return None
+    
+    try:
+        # Try to decrypt the message
+        decrypted_message = decrypt_rsa(res)
+        return decrypted_message.decode('utf-8')
+    except Exception as e:
+        print(f"Error decrypting message: {e}")
+        return res  # Return the encoded message if decryption fails
+
+# Add decrypt endpoint
+@app.route('/decrypt', methods=['POST'])
+def decrypt_endpoint():
+    """Endpoint to decrypt hidden text from video"""
+    if 'video' not in request.files:
+        return jsonify({"error": "Missing video file"}), 400
+    
+    video_file = request.files['video']
+    
+    if video_file.filename == '':
+        return jsonify({"error": "No video selected"}), 400
+    
+    # Create temporary directory for processing
+    session_id = str(uuid.uuid4())
+    temp_dir = os.path.join(TEMP_FOLDER, session_id)
+    os.makedirs(temp_dir, exist_ok=True)
+    
+    try:
+        # Save uploaded video
+        video_path = os.path.join(temp_dir, secure_filename(video_file.filename))
+        video_file.save(video_path)
+        
+        # Decode and decrypt hidden text
+        decrypted_text = decode_video(video_path, temp_dir)
+        
+        if decrypted_text:
+            return jsonify({"text": decrypted_text})
+        else:
+            return jsonify({"error": "No hidden text found in video"}), 404
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+    finally:
+        # Clean up temporary files
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
