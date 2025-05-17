@@ -11,7 +11,7 @@
 !.yarn/versions
 .pnp.js
 .yarn/install-state.gz
-.env
+*.env
 
 # testing
 /coverage
