@@ -7,10 +7,11 @@ import { Home, PlusCircle, User } from "lucide-react";
 import VideoCard from "@/components/video-card";
 import { motion } from "framer-motion";
 import AnimatedLogo from "@/components/animated-logo";
+import { Video } from "@/types/video";
 
 export default function FeedPage() {
   const router = useRouter();
-  const [videos, setVideos] = useState<any[]>([]);
+  const [videos, setVideos] = useState<Video[]>([]);
 
   useEffect(() => {
     // Mock video data
