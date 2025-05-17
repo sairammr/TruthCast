@@ -140,3 +140,91 @@ def encode_frames(frames, encrypted_text, temp_dir):
         print(f"[INFO] Frame {frame_num} holds {split_text_list[i]}")
         
     return frame_numbers
+
+def create_output_video(frames, original_video, output_path):
+    """Create output video from frames"""
+    # Get video properties
+    video = cv2.VideoCapture(original_video)
+    fps = video.get(cv2.CAP_PROP_FPS)
+    width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    
+    # Ensure output path ends with .mov
+    if not output_path.endswith('.mov'):
+        output_path = output_path.rsplit('.', 1)[0] + '.mov'
+    
+    # Create video writer with PNG codec for MOV container
+    # This preserves image quality better for steganography
+    fourcc = cv2.VideoWriter_fourcc(*'png ')  # PNG codec with MOV container
+    out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+    
+    # Add frames to video
+    for frame_path in frames:
+        frame = cv2.imread(frame_path)
+        if frame is not None:
+            out.write(frame)
+    
+    out.release()
+    print(f"[INFO] Created output video: {output_path}")
+    return output_path
+
+# Add encrypt endpoint
+@app.route('/encrypt', methods=['POST'])
+def encrypt_endpoint():
+    """Endpoint to encrypt text and hide it in video"""
+    if 'video' not in request.files or 'text' not in request.form:
+        return jsonify({"error": "Missing video file or text"}), 400
+    
+    video_file = request.files['video']
+    text = request.form['text']
+    
+    if video_file.filename == '':
+        return jsonify({"error": "No video selected"}), 400
+    
+    # Create temporary directory for processing
+    session_id = str(uuid.uuid4())
+    temp_dir = os.path.join(TEMP_FOLDER, session_id)
+    os.makedirs(temp_dir, exist_ok=True)
+    
+    try:
+        # Save uploaded video
+        video_path = os.path.join(temp_dir, secure_filename(video_file.filename))
+        video_file.save(video_path)
+        
+        # Extract frames from video
+        frames, _ = extract_frames(video_path, temp_dir)
+        
+        # Encrypt the text using RSA
+        encrypted_text = encrypt_rsa(text)
+        
+        # Encode encrypted text into frames
+        frame_numbers = encode_frames(frames, encrypted_text, temp_dir)
+        
+        # Create output video with .mov extension
+        original_filename = secure_filename(video_file.filename)
+        output_filename = f"encoded_{original_filename.rsplit('.', 1)[0]}.mov"
+        output_path = os.path.join(temp_dir, output_filename)
+        create_output_video(frames, video_path, output_path)
+        
+        # Read the file into memory
+        with open(output_path, 'rb') as file:
+            file_data = file.read()
+        
+        # Create response with the encoded video file
+        response = {
+            "video": base64.b64encode(file_data).decode('utf-8'),
+            "filename": output_filename
+        }
+        
+        return jsonify(response)
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+    finally:
+        # Clean up temporary files
+        try:
+            if os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir)
+        except Exception as cleanup_error:
+            print(f"Error cleaning up: {cleanup_error}")
