@@ -91,3 +91,52 @@ def extract_endpoint():
                 shutil.rmtree(temp_dir)
         except Exception as cleanup_error:
             print(f"Error cleaning up: {cleanup_error}")
+# Add imports
+import math
+from stegano import lsb
+
+# Add functions
+def split_string(s_str, count=10):
+    """Split string into parts"""
+    per_c = math.ceil(len(s_str)/count)
+    c_cout = 0
+    out_str = ''
+    split_list = []
+    for s in s_str:
+        out_str += s
+        c_cout += 1
+        if c_cout == per_c:
+            split_list.append(out_str)
+            out_str = ''
+            c_cout = 0
+    if c_cout != 0:
+        split_list.append(out_str)
+    return split_list
+
+def encode_frames(frames, encrypted_text, temp_dir):
+    """Encode encrypted text into frames"""
+    # Convert to string if it's bytes
+    if isinstance(encrypted_text, bytes):
+        encrypted_text = encrypted_text.decode('utf-8')
+        
+    # Split the text into parts
+    split_text_list = split_string(encrypted_text)
+    num_parts = len(split_text_list)
+    
+    # Use the first N frames (N = number of text parts)
+    frame_numbers = list(range(min(num_parts, len(frames))))
+    
+    print(f"Encoding text into {len(frame_numbers)} frames")
+    
+    # Hide text parts in frames
+    for i, frame_num in enumerate(frame_numbers):
+        if i >= len(split_text_list):
+            break
+            
+        frame_path = frames[frame_num]
+        # Hide text in frame using LSB steganography
+        secret_enc = lsb.hide(frame_path, split_text_list[i])
+        secret_enc.save(frame_path)
+        print(f"[INFO] Frame {frame_num} holds {split_text_list[i]}")
+        
+    return frame_numbers
