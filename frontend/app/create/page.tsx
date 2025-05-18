@@ -4,31 +4,35 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Video, Check, X, Loader } from "lucide-react";
-import { useAccount, useWalletClient } from "wagmi";
+import { useAccount, useWalletClient, usePublicClient } from "wagmi";
 import { lensClient } from "@/lib/lens";
 import { video, MediaVideoMimeType } from "@lens-protocol/metadata";
 import { storageClient } from "@/lib/storageClient";
-import { post } from "@lens-protocol/client/actions";
 import { uri } from "@lens-protocol/client";
-import { handleOperationWith } from "@lens-protocol/client/viem";
+import { post } from "@lens-protocol/client/actions";
+
+import SecretManagerABI from "../abi/TruthCastContractAbi.json";
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
-const SECRET_MESSAGE = "abcdefghijklmnopqrstuvwxyz";
+const CONTRACT_ADDRESS = "0x640C78b3eB3e3E2eDDB7298ab3F09ca5561Af14E";
 
 export default function CreatePage() {
+  const user = typeof window !== "undefined" ? localStorage.getItem("lensAccountAddress") as `0x${string}` : null;
   const { address, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
+  const publicClient = usePublicClient();
+
   const [isRecording, setIsRecording] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
+  // Setup camera on mount
   useEffect(() => {
     if (!address || !isConnected) {
       console.error("Please connect your wallet first");
@@ -36,9 +40,7 @@ export default function CreatePage() {
     }
     const startCamera = async () => {
       try {
-        const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: true
-        });
+        const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
         setStream(mediaStream);
         if (videoRef.current) videoRef.current.srcObject = mediaStream;
       } catch (error) {
@@ -47,18 +49,18 @@ export default function CreatePage() {
     };
 
     startCamera();
-    return () => stream?.getTracks().forEach(track => track.stop());
-  }, []);
+    return () => stream?.getTracks().forEach((track) => track.stop());
+  }, [address, isConnected]);
 
   const startRecording = () => {
     if (!stream) return;
-    
+
     const mediaRecorder = new MediaRecorder(stream);
     mediaRecorderRef.current = mediaRecorder;
     setRecordedChunks([]);
 
     mediaRecorder.ondataavailable = (e) => {
-      if (e.data.size > 0) setRecordedChunks(prev => [...prev, e.data]);
+      if (e.data.size > 0) setRecordedChunks((prev) => [...prev, e.data]);
     };
 
     mediaRecorder.start();
@@ -68,35 +70,107 @@ export default function CreatePage() {
   const stopRecording = () => {
     mediaRecorderRef.current?.stop();
     setIsRecording(false);
-    
+
     const blob = new Blob(recordedChunks, { type: "video/mp4" });
     setPreviewUrl(URL.createObjectURL(blob));
   };
 
+  // Wait for SecretCreated event using Promise
+  const waitForSecretCreatedEvent = (timeoutMs = 30000): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error("Timeout waiting for SecretCreated event"));
+      }, timeoutMs);
+      if (!publicClient) {
+        console.error("publicClient first");
+        return;
+      }
+      const unwatch = publicClient.watchContractEvent({
+        address: CONTRACT_ADDRESS,
+        abi: SecretManagerABI.output.abi,
+        eventName: "SecretCreated",
+        onLogs: (logs) => {
+          if (logs[0]?.args?.secretHash) {
+            const hash = logs[0].args.secretHash as string;
+            console.log("SecretCreated event detected:", hash);
+            clearTimeout(timeout);
+            unwatch(); // Stop watching for events
+            resolve(hash);
+          } else {
+            console.error("SecretCreated event received but no secretHash found");
+            clearTimeout(timeout);
+            reject(new Error("No secretHash in event"));
+          }
+        },
+        onError: (error) => {
+          console.error("Error listening for SecretCreated event:", error);
+          clearTimeout(timeout);
+          reject(error);
+        },
+      });
+    });
+  };
+
+  // New submission flow using secretHash from event
   const handleSubmit = async () => {
-    if (!title || !recordedChunks.length) {
-      console.log("Please add a title and record a video");
+    if (!title || !recordedChunks.length || !walletClient || !address) {
+      toast.error("Missing required information");
+      return;
+    }
+    if (!publicClient) {
+      toast.error("Public client not available");
+      return;
+    }
+    if (!user) {
+      toast.error("User not authenticated");
       return;
     }
 
     setIsProcessing(true);
-    
+
     try {
+      // Step 1: Start listening for the event BEFORE making the contract call
+      const secretHashPromise = waitForSecretCreatedEvent();
+      
+      // Step 2: Call createPreSecret on contract
+      console.log("Calling createPreSecret...");
+      await walletClient.writeContract({
+        address: CONTRACT_ADDRESS,
+        abi: SecretManagerABI.output.abi,
+        functionName: "createPreSecret",
+        args: [user],
+        account: address,
+      });
+
+      // Step 3: Wait for the SecretCreated event to be received
+      console.log("Waiting for SecretCreated event...");
+      const secretHash = await secretHashPromise;
+      console.log("Received secretHash:", secretHash);
+
+      // Step 4: Encrypt video using secretHash
       const formData = new FormData();
       formData.append("video", new Blob(recordedChunks, { type: "video/mp4" }));
-      formData.append("text", SECRET_MESSAGE);
+      formData.append("text", secretHash as string);
 
+      console.log("Encrypting video...");
       const encryptRes = await fetch(`${SERVER_URL}/encrypt`, {
         method: "POST",
         body: formData,
       });
       const encryptedVideo = await encryptRes.json();
 
-      const file = new File([base64ToBlob(encryptedVideo.mp4, "video/mp4")],encryptedVideo.mp4_filename);
+      const file = new File(
+        [base64ToBlob(encryptedVideo.mp4, "video/mp4")],
+        encryptedVideo.mp4_filename
+      );
 
+      // Step 5: Upload encrypted video
+      console.log("Uploading encrypted video...");
       const uploadRes = await storageClient.uploadFile(file);
       if (!uploadRes) throw new Error("Video upload failed");
 
+      // Step 6: Create Lens metadata and post
+      console.log("Creating Lens metadata...");
       const metadata = video({
         content: description,
         title,
@@ -106,25 +180,43 @@ export default function CreatePage() {
           altTag: title,
         },
       });
-      let metadataUri = "";
-      try {
-        if (typeof storageClient?.uploadAsJson === 'function') {
-          const { uri } = await storageClient.uploadAsJson(metadata);
-          metadataUri = uri;
-        } else {
-        }
-      } catch (err) {
-        console.error("Error uploading metadata:", err);
-      }
+
+      const { uri: metadataUri } = await storageClient.uploadAsJson(metadata);
+
+      console.log("Resuming Lens session...");
       const resumed = await lensClient.resumeSession();
-      if (resumed.isErr()) {
-        return console.error(resumed.error);
-      }
+      if (resumed.isErr()) throw new Error(resumed.error.message);
+
       const sessionClient = resumed.value;
-      const result = await post(sessionClient, { contentUri: uri(metadataUri) }).andThen(handleOperationWith(walletClient));
-      console.log("result", result);
-    } catch (error) {
-      console.error(`Post failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+      console.log("Creating Lens post...");
+      const result = await post(sessionClient, {
+        contentUri: uri(metadataUri),
+      });
+
+      if (result.isErr()) throw new Error(result.error.message);
+
+      const postId = result.value.hash;
+      console.log("Post created with ID:", postId);
+      
+      // Step 7: Associate post details onchain
+      console.log("Associating post details onchain...");
+      await walletClient.writeContract({
+        address: CONTRACT_ADDRESS,
+        abi: SecretManagerABI.output.abi,
+        functionName: "associatePostDetails",
+        args: [secretHash as string, postId],
+        account: address,
+      });
+
+      toast.success("Post published successfully!");
+      // Clear preview and inputs
+      setPreviewUrl(null);
+      setTitle("");
+      setDescription("");
+      setRecordedChunks([]);
+    } catch (error: any) {
+      console.error("Submission failed:", error.message || error);
+      toast.error(`Submission failed: ${error.message || "Unknown error"}`);
     } finally {
       setIsProcessing(false);
     }
@@ -135,11 +227,20 @@ export default function CreatePage() {
       <h1 className="text-2xl font-bold mb-6">Post Your Truth</h1>
       {previewUrl ? (
         <div className="mb-4">
-          <video src={previewUrl} controls className="w-full aspect-video rounded-lg" />
+          <video
+            src={previewUrl}
+            controls
+            className="w-full aspect-video rounded-lg"
+          />
         </div>
       ) : (
         <div className="aspect-video bg-gray-100 rounded-lg mb-4 overflow-hidden">
-          <video ref={videoRef} autoPlay muted className="w-full h-full object-cover" />
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            className="w-full h-full object-cover"
+          />
         </div>
       )}
       {!previewUrl ? (
@@ -168,18 +269,10 @@ export default function CreatePage() {
             />
           </div>
           <div className="flex gap-2">
-            <Button
-              onClick={() => setPreviewUrl(null)}
-              variant="outline"
-              className="flex-1"
-            >
+            <Button onClick={() => setPreviewUrl(null)} variant="outline" className="flex-1">
               <X className="mr-2" /> Retake
             </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={isProcessing}
-              className="flex-1"
-            >
+            <Button onClick={handleSubmit} disabled={isProcessing} className="flex-1">
               {isProcessing ? (
                 <Loader className="animate-spin mr-2" />
               ) : (
@@ -202,7 +295,7 @@ const base64ToBlob = (base64: string, type: string) => {
     const byteNumbers = new Array(slice.length);
     for (let i = 0; i < slice.length; i++) {
       byteNumbers[i] = slice.charCodeAt(i);
-    }   
+    }
     byteArrays.push(new Uint8Array(byteNumbers));
   }
   return new Blob(byteArrays, { type });

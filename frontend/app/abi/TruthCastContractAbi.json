@@ -6,6 +6,56 @@
 	"output": {
 		"abi": [
 			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "bytes32",
+						"name": "secretHash",
+						"type": "bytes32"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "postId",
+						"type": "string"
+					}
+				],
+				"name": "PostDetailsAssociated",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "bytes32",
+						"name": "secretHash",
+						"type": "bytes32"
+					},
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "creator",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "nonce",
+						"type": "uint256"
+					}
+				],
+				"name": "SecretCreated",
+				"type": "event"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "bytes32",
@@ -16,21 +66,6 @@
 						"internalType": "string",
 						"name": "postId",
 						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "title",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "description",
-						"type": "string"
-					},
-					{
-						"internalType": "uint256",
-						"name": "duration",
-						"type": "uint256"
 					}
 				],
 				"name": "associatePostDetails",
@@ -52,9 +87,27 @@
 						"internalType": "bytes32",
 						"name": "secretHash",
 						"type": "bytes32"
+					},
+					{
+						"internalType": "uint256",
+						"name": "nonce",
+						"type": "uint256"
 					}
 				],
 				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "postNonce",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -69,11 +122,6 @@
 				"outputs": [
 					{
 						"internalType": "string",
-						"name": "title",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
 						"name": "postId",
 						"type": "string"
 					}
@@ -84,12 +132,32 @@
 		],
 		"devdoc": {
 			"kind": "dev",
-			"methods": {},
+			"methods": {
+				"createPreSecret(address)": {
+					"params": {
+						"user": "The target user address"
+					},
+					"returns": {
+						"nonce": "The nonce used in the hash",
+						"secretHash": "The computed secret hash"
+					}
+				}
+			},
 			"version": 1
 		},
 		"userdoc": {
 			"kind": "user",
-			"methods": {},
+			"methods": {
+				"associatePostDetails(bytes32,string)": {
+					"notice": "Associates postId with the secret hash and marks it complete"
+				},
+				"createPreSecret(address)": {
+					"notice": "Creates a pre-secret hash using an incrementing nonce"
+				},
+				"verifySecret(bytes32)": {
+					"notice": "Verifies secret is complete and returns postId"
+				}
+			},
 			"version": 1
 		}
 	},
@@ -110,11 +178,11 @@
 	},
 	"sources": {
 		"contracts/truthCast.sol": {
-			"keccak256": "0x3b07db1d39c9b606aae9de6d55f15d9c625bc7470705f210e61ccb0e5cf35ecf",
+			"keccak256": "0x7174739477cc8c08a137bdc3ff95cccb7dfadf56232900dab242ee18dab63d19",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://45303069f0615cb8a318b2cb263d2a5abe1070e830a2901fe6ec7bc31c5bcf4b",
-				"dweb:/ipfs/QmV1mUzxDJYwgNXrR51E6g4PZvqXZnwhK9dCKqK8ZFkKYk"
+				"bzz-raw://9dd1b496535222ee468610bbd8ac0961e7d9db091e9c47cef9a779b7e9b6576d",
+				"dweb:/ipfs/QmZLsyW7MAB4HYDHs1vRxi5y4wViA8bkWkapyUwDdHrjFb"
 			]
 		}
 	},
