@@ -20,9 +20,9 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex flex-col h-full fixed inset-0 bg-[#f5f5f5] dark:bg-black">
+    <div className="flex flex-col h-full fixed inset-0 bg-[#f5f5f5] dark:bg-black max-w-[420px] mx-auto">
       <header className="flex justify-center p-4 bg-[#f5f5f5] dark:bg-black border-b border-black dark:border-white safe-top">
-        <div className="w-full max-w-3xl flex justify-between items-center">
+        <div className="w-full max-w-[420px] flex justify-between items-center">
           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
             <Button
               variant="ghost"
@@ -34,14 +34,14 @@ export default function SettingsPage() {
             </Button>
           </motion.div>
           <h1 className="text-xl font-bold">
-            SET<span className="text-[#10b981]">TINGS</span>
+            SET<span className="text-[#004aad]">TINGS</span>
           </h1>
           <div className="w-10" /> {/* Spacer for alignment */}
         </div>
       </header>
 
       <main className="flex-1 overflow-y-auto overscroll-y-contain">
-        <div className="container max-w-3xl mx-auto px-4 py-6">
+          <div className="container max-w-[420px] mx-auto px-4 py-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

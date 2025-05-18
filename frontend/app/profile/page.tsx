@@ -38,9 +38,9 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="flex flex-col h-full fixed inset-0 bg-[#f5f5f5] dark:bg-black">
+    <div className="flex flex-col h-full fixed inset-0 bg-[#f5f5f5] dark:bg-black max-w-[420px] mx-auto">
       <header className="flex justify-center p-4 bg-[#f5f5f5] dark:bg-black border-b border-black dark:border-white safe-top">
-        <div className="w-full max-w-3xl flex justify-between items-center">
+        <div className="w-full max-w-[420px] flex justify-between items-center">
           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
             <Button
               variant="ghost"
@@ -52,7 +52,7 @@ export default function ProfilePage() {
             </Button>
           </motion.div>
           <h1 className="text-xl font-bold">
-            PRO<span className="text-[#10b981]">FILE</span>
+            PRO<span className="text-[#004aad]">FILE</span>
           </h1>
           <div className="flex space-x-2">
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
@@ -114,14 +114,14 @@ export default function ProfilePage() {
               <TabsList className="w-full brutalist-box bg-white dark:bg-black">
                 <TabsTrigger
                   value="videos"
-                  className="flex-1 data-[state=active]:bg-[#10b981] data-[state=active]:text-white"
+                  className="flex-1 data-[state=active]:bg-[#004aad] data-[state=active]:text-white"
                 >
                   <Grid className="h-4 w-4 mr-2" />
                   Videos
                 </TabsTrigger>
                 <TabsTrigger
                   value="saved"
-                  className="flex-1 data-[state=active]:bg-[#10b981] data-[state=active]:text-white"
+                  className="flex-1 data-[state=active]:bg-[#004aad] data-[state=active]:text-white"
                 >
                   <BookMarked className="h-4 w-4 mr-2" />
                   Saved

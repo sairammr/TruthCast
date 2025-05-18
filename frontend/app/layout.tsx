@@ -3,6 +3,8 @@ import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Web3Provider } from "@/providers/WalletProvider";
+import ConnectButton from "@/components/connect-button";
+
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -32,19 +34,20 @@ export default function RootLayout({
         />
       </head>
       <Web3Provider>
-        <body
-          className={`${spaceGrotesk.className} h-full overflow-hidden overscroll-none`}
-        >
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem={false}
-            disableTransitionOnChange
-          >
-            {children}
-          </ThemeProvider>
+        <body className={`${spaceGrotesk.className} h-full bg-[#f2f2f2] flex justify-center`}>
+          <div className="w-full max-w-[420px] h-full bg-white shadow-xl overflow-hidden relative">
+            <ConnectButton />
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="light"
+              enableSystem={false}
+              disableTransitionOnChange
+            >
+              {children}
+            </ThemeProvider>
+          </div>
         </body>
-        </Web3Provider>
+      </Web3Provider>
     </html>
   );
 }

@@ -12,6 +12,7 @@ import { signMessageWith } from "@lens-protocol/client/viem";
 import { toast } from "sonner";
 import { evmAddress } from "@lens-protocol/client";
 import { fetchAccount, fetchAccountsBulk } from "@lens-protocol/client/actions";
+import { useLensStore } from "@/lib/store/lens-store";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function OnboardingPage() {
 
 
   // Automatically authenticate with Lens when wallet is connected
-  useEffect(() => {
+
     const authenticateWithLens = async () => {
       if (isConnected && address && walletClient && !isAuthenticating) {
         try {
@@ -83,14 +84,14 @@ export default function OnboardingPage() {
         }
       }
     };
-    authenticateWithLens();
-  }, [isConnected, address, walletClient]);
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-[#f5f5f5] dark:bg-black relative overflow-hidden">
       {/* Background elements */}
+
       <motion.div
-        className="absolute top-10 left-10 w-20 h-20 bg-[#10b981] rounded-full opacity-20"
+        className="absolute top-10 left-10 w-20 h-20 bg-[#004aad] rounded-full opacity-20"
         animate={{
           x: [0, 30, 0],
           y: [0, -30, 0],
@@ -103,7 +104,7 @@ export default function OnboardingPage() {
         }}
       />
       <motion.div
-        className="absolute bottom-20 right-10 w-32 h-32 bg-[#10b981] rounded-full opacity-20"
+        className="absolute bottom-20 right-10 w-32 h-32 bg-[#004aad] rounded-full opacity-20"
         animate={{
           x: [0, -40, 0],
           y: [0, 40, 0],
@@ -116,7 +117,7 @@ export default function OnboardingPage() {
         }}
       />
       <motion.div
-        className="absolute top-1/2 left-1/4 w-16 h-16 bg-[#10b981] opacity-10"
+        className="absolute top-1/2 left-1/4 w-16 h-16 bg-[#004aad] opacity-20"
         animate={{
           rotate: [0, 180, 360],
           scale: [1, 1.2, 1],
@@ -132,7 +133,7 @@ export default function OnboardingPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="w-full max-w-md text-center space-y-8 z-10"
+        className="w-full max-w-md text-center space-y-8 z-10 opacity-10"
       >
         <motion.div
           initial={{ scale: 0.9 }}
@@ -154,7 +155,7 @@ export default function OnboardingPage() {
           transition={{ delay: 0.8, duration: 0.5 }}
         >
           <p className="text-gray-600 dark:text-gray-400 text-lg">
-            Raw. Unfiltered. Real.
+            For Real Humans. By Real Humans.
           </p>
         </motion.div>
 
@@ -165,22 +166,16 @@ export default function OnboardingPage() {
           className="space-y-4 pt-8"
         >
           <Button
-            onClick={() => router.push("/feed")}
-            className="w-full py-6 text-lg brutalist-button hover:scale-105 transition-all duration-300"
-          >
-            Launch Dapp
-          </Button>
-          <ConnectKitButton />
-          {isConnected && (
-            <Button
-              onClick={() => router.push("/lens")}
-              className="w-full bg-[#10b981] hover:bg-[#0d8c6a] text-white"
+              onClick={() => {
+                authenticateWithLens();
+              }}
+              className="w-[350px] py-6 text-lg brutalist-button hover:scale-105 transition-all duration-300"
             >
-              Lens Profile
+              Launch Dapp
             </Button>
-          )}
+         
         </motion.div>
-        <motion.div
+        {/* <motion.div
           className="fixed bottom-4 right-4 z-50"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -196,7 +191,7 @@ export default function OnboardingPage() {
           >
             Offchain Mode
           </Button>
-        </motion.div>
+        </motion.div> */}
       </motion.div>
     </div>
   );

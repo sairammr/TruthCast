@@ -24,6 +24,7 @@ import Navigation from "@/components/navigation";
 import { LensPostVideo } from "@/components/lens-post-video";
 import { useAccount } from "wagmi";
 import { ConnectKitButton } from "connectkit";
+import { useLensStore } from "@/lib/store/lens-store";
 
 // Server URL for steganography API
 // Fix: Use the correct API endpoint with path
@@ -459,7 +460,7 @@ export default function CreatePage() {
     // Loading/processing view
     if (isUploading) {
       return (
-        <div className="relative w-full h-[50vh] md:h-[60vh] max-w-3xl mx-auto mb-4 bg-gray-900 rounded-lg overflow-hidden flex flex-col items-center justify-center">
+        <div className="relative w-full h-[50vh] md:h-[60vh] max-w-[420px] mx-auto mb-4 bg-gray-900 rounded-lg overflow-hidden flex flex-col items-center justify-center">
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
@@ -486,7 +487,7 @@ export default function CreatePage() {
     // Recording view (camera active, not recording or in preview)
     if (!showPreview) {
       return (
-        <div className="relative w-full h-[50vh] md:h-[60vh] max-w-3xl mx-auto mb-4 bg-gray-200 dark:bg-gray-800 rounded-lg overflow-hidden">
+        <div className="relative w-full h-[50vh] md:h-[60vh] max-w-[420px] mx-auto mb-4 bg-gray-200 dark:bg-gray-800 rounded-lg overflow-hidden">
           {!stream && (
             <div className="absolute inset-0 flex items-center justify-center">
               <Camera className="w-16 h-16 text-gray-400" />
@@ -528,7 +529,7 @@ export default function CreatePage() {
       <>
         {!encryptedVideoData ? (
           // Regular preview before upload
-          <div className="relative w-full h-[50vh] md:h-[60vh] max-w-3xl mx-auto mb-4 bg-gray-200 dark:bg-gray-800 rounded-lg overflow-hidden">
+          <div className="relative w-full h-[50vh] md:h-[60vh] max-w-[420px] mx-auto mb-4 bg-gray-200 dark:bg-gray-800 rounded-lg overflow-hidden">
             <video
               ref={previewRef}
               controls
@@ -540,7 +541,7 @@ export default function CreatePage() {
           </div>
         ) : (
           // Processed video view with format toggle
-          <div className="w-full max-w-3xl mx-auto mb-4">
+          <div className="w-full max-w-[420px] mx-auto mb-4">
             {/* Format toggle buttons */}
             <div className="flex mb-4">
               <button
@@ -587,7 +588,7 @@ export default function CreatePage() {
 
         {/* Title input field (displayed when sharing) */}
         {showShareOptions && (
-          <div className="w-full max-w-3xl mx-auto mb-4">
+          <div className="w-full max-w-[420px] mx-auto mb-4">
             <div className="mb-2 text-sm md:text-md font-semibold text-gray-700 dark:text-gray-300">
               Video Title:
             </div>
@@ -603,7 +604,7 @@ export default function CreatePage() {
 
         {/* Share and download options */}
         {showShareOptions && (
-          <div className="w-full max-w-3xl mx-auto mb-4 bg-white dark:bg-gray-900 p-3 md:p-4 rounded-lg shadow">
+          <div className="w-full max-w-[420px] mx-auto mb-4 bg-white dark:bg-gray-900 p-3 md:p-4 rounded-lg shadow">
             <h3 className="font-bold text-base md:text-lg mb-3 text-black dark:text-white">
               Share your Deep Truth
             </h3>
@@ -718,14 +719,14 @@ export default function CreatePage() {
   };
 
   return (
-    <div className="flex flex-col h-full fixed inset-0 bg-[#f5f5f5] dark:bg-black">
+    <div className="flex flex-col h-full fixed inset-0 bg-[#f5f5f5] dark:bg-black max-w-[420px] mx-auto">
       <Navigation />
       <div className="flex flex-col items-center justify-center min-h-screen p-2 md:p-4 bg-[#f5f5f5] dark:bg-black relative overflow-hidden">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="w-full max-w-4xl text-center space-y-4 md:space-y-8 z-10"
+          className="w-full max-w-[420px] text-center space-y-4 md:space-y-8 z-1"
         >
           {/* Back button to /feed */}
           <div className="absolute top-2 md:top-4 left-2 md:left-4 z-20">
@@ -748,7 +749,7 @@ export default function CreatePage() {
               stiffness: 260,
               damping: 20,
             }}
-            className="brutalist-box p-3 md:p-6 bg-white dark:bg-black rounded-lg mt-10 md:mt-0"
+            className="brutalist-box p-3 md:p-6 bg-white dark:bg-black rounded-lg mt-10 md:mt-0 max-w-[420px] mx-auto"
           >
             <motion.h1
               className="text-2xl md:text-4xl font-bold tracking-tight text-black dark:text-white mb-4 md:mb-6"
@@ -756,7 +757,7 @@ export default function CreatePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
             >
-              CREATE YOUR <span className="text-[#10b981]">DEEP TRUTH</span> NOW
+              CREATE YOUR <span className="text-[#004aad]">DEEP TRUTH</span> NOW
             </motion.h1>
 
             {/* Main content area - renders different views based on state */}

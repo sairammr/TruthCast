@@ -6,13 +6,13 @@ export default function Navigation() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-black border-t border-black dark:border-white safe-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-black border-t border-black dark:border-white safe-bottom max-w-[420px] mx-auto" >
       <div className="max-w-3xl mx-auto px-4">
         <div className="flex justify-around items-center h-16">
           <Link
             href="/feed"
             className={`flex flex-col items-center justify-center ${
-              pathname === "/feed" ? "text-[#10b981]" : "text-gray-500"
+              pathname === "/feed" ? "text-[#004aad]" : "text-gray-500"
             }`}
           >
             <Home className="h-6 w-6" />
@@ -21,7 +21,7 @@ export default function Navigation() {
           <Link
             href="/create"
             className={`flex flex-col items-center justify-center ${
-              pathname === "/create" ? "text-[#10b981]" : "text-gray-500"
+              pathname === "/create" ? "text-[#004aad]" : "text-gray-500"
             }`}
           >
             <Plus className="h-6 w-6" />
@@ -30,7 +30,7 @@ export default function Navigation() {
           <Link
             href="/decrypt"
             className={`flex flex-col items-center justify-center ${
-              pathname === "/decrypt" ? "text-[#10b981]" : "text-gray-500"
+              pathname === "/decrypt" ? "text-[#004aad]" : "text-gray-500"
             }`}
           >
             <Unlock className="h-6 w-6" />
@@ -39,7 +39,7 @@ export default function Navigation() {
           <Link
             href="/profile"
             className={`flex flex-col items-center justify-center ${
-              pathname === "/profile" ? "text-[#10b981]" : "text-gray-500"
+              pathname === "/profile" ? "text-[#004aad]" : "text-gray-500"
             }`}
           >
             <User className="h-6 w-6" />

@@ -10,22 +10,26 @@
     --card-foreground: 0 0% 0%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
-    --primary: 142 76% 36%;
+    --primary: 214 100% 34%;
     --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 95%;
     --secondary-foreground: 0 0% 0%;
     --muted: 0 0% 95%;
     --muted-foreground: 0 0% 40%;
-    --accent: 142 76% 36%;
+    --accent: 214 100% 34%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 0% 0%;
     --destructive-foreground: 0 0% 100%;
     --border: 0 0% 0%;
     --input: 0 0% 90%;
-    --ring: 142 76% 36%;
+    --ring: 214 100% 34%;
     --radius: 0;
   }
-
+body{
+  background-color: #f2f2f2;
+  max-width: 420px;
+  margin: 0 auto;
+}
   .dark {
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;
@@ -33,19 +37,19 @@
     --card-foreground: 0 0% 100%;
     --popover: 0 0% 0%;
     --popover-foreground: 0 0% 100%;
-    --primary: 142 76% 36%;
-    --primary-foreground: 0 0% 0%;
+    --primary: 214 100% 34%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 15%;
     --secondary-foreground: 0 0% 100%;
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 70%;
-    --accent: 142 76% 36%;
-    --accent-foreground: 0 0% 0%;
+    --accent: 214 100% 34%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 0% 100%;
     --destructive-foreground: 0 0% 0%;
     --border: 0 0% 100%;
     --input: 0 0% 15%;
-    --ring: 142 76% 36%;
+    --ring: 214 100% 34%;
   }
 }
 
@@ -81,7 +85,7 @@
 }
 
 .brutalist-button {
-  background-color: #10b981;
+  background-color: #004aad;
   color: white;
   border-width: 2px;
   border-color: black;
@@ -90,8 +94,8 @@
 }
 
 .dark .brutalist-button {
-  background-color: #10b981;
-  color: black;
+  background-color: #004aad;
+  color: white;
   border-color: white;
   box-shadow: 4px 4px 0px 0px rgba(255, 255, 255, 1);
 }
@@ -153,11 +157,11 @@
 }
 
 .green-accent {
-  color: #10b981;
+  color: #004aad;
 }
 
 .green-bg {
-  background-color: #10b981;
+  background-color: #004aad;
 }
 
 .rotate-animation {
