@@ -17,6 +17,7 @@ import { signMessageWith } from "@lens-protocol/client/viem";
 import { fetchPost, post } from "@lens-protocol/client/actions";
 import { evmAddress, txHash, uri } from "@lens-protocol/client";
 import { handleOperationWith } from "@lens-protocol/client/viem";
+import { useRouter } from "next/navigation";
 
 interface LensPostVideoProps {
   videoData: {
@@ -34,7 +35,7 @@ export function LensPostVideo({
 }: LensPostVideoProps) {
   const { address, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
-  
+  const router = useRouter();
   const [title, setTitle] = useState(videoTitle || "My Deep Truth");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("truthcast,deeptruth");
@@ -155,6 +156,7 @@ export function LensPostVideo({
       const result = await post(sessionClient, { contentUri: uri(metadataUri) }).andThen(handleOperationWith(walletClient));
       console.log("result", result);
      console.log("Post created successfully!", { id: "post" });
+     router.push("/feed");
       
 
     

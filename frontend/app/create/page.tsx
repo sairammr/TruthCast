@@ -459,24 +459,24 @@ export default function CreatePage() {
     // Loading/processing view
     if (isUploading) {
       return (
-        <div className="relative w-full h-[50vh] md:h-[60vh] max-w-[420px] mx-auto mb-4 bg-gray-900 rounded-lg overflow-hidden flex flex-col items-center justify-center">
+        <div className="relative w-full h-[50vh] md:h-[60vh] max-w-[420px] mx-auto mb-4 bg-white rounded-lg overflow-hidden flex flex-col items-center justify-center">
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
             className="mb-6"
           >
-            <Loader size={48} className="text-[#10b981]" />
+            <Loader size={48} className="text-[#004aad]" />
           </motion.div>
 
           {/* Progress bar */}
-          <div className="w-3/4 h-2 bg-gray-700 rounded-full mb-4">
+          <div className="w-3/4 h-2 bg-black rounded-full mb-4">
             <div
-              className="h-full bg-[#10b981] rounded-full transition-all duration-300 ease-out"
+              className="h-full bg-[#004aad] rounded-full transition-all duration-300 ease-out"
               style={{ width: `${uploadProgress}%` }}
             ></div>
           </div>
 
-          <p className="text-white text-lg px-4 text-center">
+          <p className="text-black text-lg px-4 text-center">
             Processing your Deep Truth... {Math.round(uploadProgress)}%
           </p>
         </div>
@@ -720,7 +720,7 @@ export default function CreatePage() {
                 >
                   START CAMERA
                 </Button>
-              ) : showPreview && !isUploading ? (
+              ) : showPreview && !isUploading  && !encryptedVideoData ? (
                 <div className="flex space-x-2 md:space-x-4">
                   <Button
                     onClick={retakeVideo}
