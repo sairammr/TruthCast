@@ -5,4 +5,5 @@ export interface Video {
   caption: string;
   likes: number;
   comments: number;
+  authorId: string;
 }

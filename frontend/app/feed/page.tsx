@@ -31,6 +31,7 @@ export default function FeedPage() {
           apps: [evmAddress(process.env.NEXT_PUBLIC_LENS_APP_ID || "")],
         },
       });
+      console.log('result', result);
 
       if (result.isOk()) {
         const { items } = result.value;
@@ -52,6 +53,7 @@ export default function FeedPage() {
               tags: post.metadata.tags || [],
               likes: post.stats.upvotes || 0,
               comments: post.stats.comments || 0,
+              authorId: post.author.address,
               author: {
                 name:
                   post.author.metadata?.name ||

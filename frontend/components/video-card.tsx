@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { useLensStore } from "@/lib/useLensStore";
 import { lensClient } from "@/lib/lens";
 import { signMessageWith } from "@lens-protocol/client/viem";
+import FollowButton from "./follow-button";
 
 interface VideoCardProps {
   video: {
@@ -28,6 +29,7 @@ interface VideoCardProps {
     caption: string;
     likes: number;
     comments: number;
+    authorId: string;
   };
 }
 
@@ -205,6 +207,7 @@ export default function VideoCard({ video }: VideoCardProps) {
           <div>
             <p className="font-bold">@{video.username}</p>
           </div>
+          <FollowButton profileId={video.authorId} />
         </div>
         <p className="mt-2 text-gray-800 dark:text-gray-200">{video.caption}</p>
       </CardHeader>
