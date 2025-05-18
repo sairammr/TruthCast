@@ -84,13 +84,13 @@ export default function CommentSection({ postid, initialComments = [], onAddComm
       }
       // Authenticate if not already
      
-        if (!sessionClient) {
-          toast.error("No Lens account found. Please create or connect your Lens profile.");
-          setLoading(false);
-          return;
-        }
+        
 
-        setSessionClient(sessionClient);
+       const resumed = await lensClient.resumeSession();
+        if (resumed.isErr()) {
+          return console.error(resumed.error);
+        }
+        const sessionClient = resumed.value;
         const metadata = textOnly({
           content: commentText,
         });

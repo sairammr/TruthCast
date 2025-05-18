@@ -1,9 +1,9 @@
 import { create } from "zustand";
-import { LensClient } from '@lens-protocol/client';
+import { SessionClient } from '@lens-protocol/client';
 
 interface LensState {
-  sessionClient: LensClient | null;
-  setSessionClient: (client: LensClient) => void;
+  sessionClient: SessionClient | null;
+  setSessionClient: (client: SessionClient) => void;
   followStatus: Record<string, boolean>;
   setFollowStatus: (accountId: string, isFollowing: boolean) => void;
 }

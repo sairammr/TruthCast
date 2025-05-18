@@ -15,9 +15,10 @@ import { storageClient } from "@/lib/storageClient";
 import { chains } from "@lens-chain/sdk/viem";
 import { signMessageWith } from "@lens-protocol/client/viem";
 import { fetchPost, post } from "@lens-protocol/client/actions";
-import { evmAddress, txHash, uri } from "@lens-protocol/client";
+import { evmAddress, PublicClient, txHash, uri } from "@lens-protocol/client";
 import { handleOperationWith } from "@lens-protocol/client/viem";
 import { useRouter } from "next/navigation";
+import { useLensStore } from "@/lib/useLensStore";
 
 interface LensPostVideoProps {
   videoData: {
@@ -40,7 +41,7 @@ export function LensPostVideo({
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("truthcast,deeptruth");
   const [isPosting, setIsPosting] = useState(false);
-
+  const setSessionClient = useLensStore((state) => state.setSessionClient);
   const handlePost = async () => {
     console.log("handlePost");
     if (!videoData) {
@@ -59,29 +60,10 @@ export function LensPostVideo({
       toast.error("Wallet client not available");
       return;
     }
-    const authenticated = await lensClient.login({
-        accountOwner: {
-        app: process.env.NEXT_PUBLIC_LENS_APP_ID,
-          owner: evmAddress(address),
-          account: localStorage.getItem("lensAccountAddress"),//need to replace with the address of the account
-          //account needs to be replaces with the address of the account 
-          // (not user wallet address. A new address is created for a lens account)
-        },
-        signMessage: signMessageWith(walletClient),
-      });
-      
-      if (authenticated.isErr()) {
-        return console.error(authenticated.error);
-      }
-      
-      // SessionClient: { ... }
-      const sessionClient = authenticated.value;
+    
 
-    // const sessionClient = getSessionClient();
-    if (!sessionClient) {
-      toast.error("You need to authenticate with Lens first");
-      return;
-    }
+    
+    
 
     try {
       setIsPosting(true);
@@ -151,7 +133,15 @@ export function LensPostVideo({
       console.log("metadataUri", metadataUri);
       toast.success("Metadata created!", { id: "post" });
       toast.loading("Creating Lens post...", { id: "post" });
-
+      
+        const resumed = await lensClient.resumeSession();
+        if (resumed.isErr()) {
+          return console.error(resumed.error);
+        }
+        setSessionClient(resumed.value);  
+        const sessionClient = resumed.value;
+      
+      
       // Create post on Lens Protocol
       const result = await post(sessionClient, { contentUri: uri(metadataUri) }).andThen(handleOperationWith(walletClient));
       console.log("result", result);

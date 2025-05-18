@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { fetchFollowStatus, follow, unfollow } from "@lens-protocol/client/actions";
-import { evmAddress } from "@lens-protocol/client";
+import { evmAddress, SessionClient } from "@lens-protocol/client";
 import { handleOperationWith, signMessageWith } from "@lens-protocol/client/viem";
 import { useLensStore } from "@/lib/useLensStore";
 import { useAccount, useWalletClient } from "wagmi";
@@ -28,8 +28,7 @@ export default function FollowButton({
 
   const { address, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
-  const sessionClient = useLensStore((state) => state.sessionClient);
-  const setSessionClient = useLensStore((state) => state.setSessionClient);
+
   const followStatus = useLensStore((state) => state.followStatus);
   const setFollowStatus = useLensStore((state) => state.setFollowStatus);
 
@@ -62,32 +61,22 @@ export default function FollowButton({
       }
     };
     checkFollowStatus();
-  }, [initialIsFollowing, address, profileId, sessionClient, setFollowStatus, onFollowChange]);
+  }, [initialIsFollowing, address, profileId,  setFollowStatus, onFollowChange]);
 
   const handleFollow = async () => {
     if (!address || !isConnected || !walletClient ) {
       toast.error("Please connect your wallet first");
       return;
     }
-    if(!sessionClient) {
-        const loginResult = await lensClient.login({
-            accountOwner: {
-              app: process.env.NEXT_PUBLIC_LENS_APP_ID,
-              owner: address,
-              account: localStorage.getItem("lensAccountAddress"),
-            },
-            signMessage: signMessageWith(walletClient),
-          });
-          if (loginResult.isErr()) {
-            toast.error("Lens authentication failed");
-            return;
-          }
-          setSessionClient(loginResult.value);
-    }
+    const resumed = await lensClient.resumeSession();
+        if (resumed.isErr()) {
+          return console.error(resumed.error);
+        } 
+        const sessionClient = resumed.value;
 
     setLoading(true);
     try {
-      const result = await follow(sessionClient, {
+      const result = await follow(sessionClient as SessionClient, {
         account: evmAddress(profileId),
       }).andThen(handleOperationWith(walletClient));
       console.log('result', result);
@@ -109,13 +98,18 @@ export default function FollowButton({
   };
 
   const handleUnfollow = async () => {
-    if (!address || !isConnected || !walletClient || !sessionClient) {
+    if (!address || !isConnected || !walletClient) {
       toast.error("Please connect your wallet first");
       return;
     }
 
     setLoading(true);
     try {
+      const resumed = await lensClient.resumeSession();
+      if (resumed.isErr()) {
+        return console.error(resumed.error);
+      }
+      const sessionClient = resumed.value;
       const result = await unfollow(sessionClient, {
         account: evmAddress(profileId),
       }).andThen(handleOperationWith(walletClient));

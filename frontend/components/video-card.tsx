@@ -40,8 +40,8 @@ export default function VideoCard({ video }: VideoCardProps) {
 
   const { address, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
-  const sessionClient = useLensStore((state) => state.sessionClient);
-  const setSessionClient = useLensStore((state) => state.setSessionClient);
+
+
 
   // Fetch user's reaction status on mount or when address/video.id changes
   useEffect(() => {
@@ -93,29 +93,29 @@ export default function VideoCard({ video }: VideoCardProps) {
       toast.error("Wallet client not available");
       return;
     }
-    let client = sessionClient;
-    const lensAccountAddress = localStorage.getItem("lensAccountAddress");
-    if (!client) {
-      
-      if (!lensAccountAddress) {
-        toast.error("No Lens account found. Please create or connect your Lens profile.");
-        return;
-      }
-      const loginResult = await lensClient.login({
-        accountOwner: {
-          app: process.env.NEXT_PUBLIC_LENS_APP_ID,
-          owner: address,
-          account: lensAccountAddress,
-        },
-        signMessage: signMessageWith(walletClient),
-      });
-      if (loginResult.isErr()) {
-        toast.error("Lens authentication failed");
-        return;
-      }
-      client = loginResult.value;
-      setSessionClient(client);
-    }
+    
+
+    const resumed = await lensClient.resumeSession();
+        if (resumed.isErr()) {
+          return console.error(resumed.error);
+        } 
+        const sessionClient = resumed.value;
+    //  if (!sessionClient) {
+    //   const loginResult = await lensClient.login({
+    //     accountOwner: {
+    //       app: process.env.NEXT_PUBLIC_LENS_APP_ID,
+    //       owner: address,
+    //       account: localStorage.getItem("lensAccountAddress"),
+    //     },
+    //     signMessage: signMessageWith(walletClient),
+    //   });
+    //   if (loginResult.isErr()) {
+    //     toast.error("Lens authentication failed");
+    //     return;
+    //   }
+    //   sessionClient = loginResult.value;
+    //   return;
+    // }
     try {
       if (!liked) {
         // Add upvote
@@ -123,7 +123,7 @@ export default function VideoCard({ video }: VideoCardProps) {
         console.log('video.id:', video.id, typeof video.id);
         const pid = postId(video.id);
         console.log('postId(video.id):', pid, typeof pid);
-        const result = await addReaction(client, {
+        const result = await addReaction(sessionClient, {
           post: pid,
           reaction: PostReactionType.Upvote,
         });
@@ -163,7 +163,7 @@ export default function VideoCard({ video }: VideoCardProps) {
         console.log('video.id:', video.id, typeof video.id);
         const pid = postId(video.id);
         console.log('postId(video.id):', pid, typeof pid);
-        const result = await undoReaction(client, {
+        const result = await undoReaction(sessionClient, {
           post: pid,
           reaction: PostReactionType.Upvote,
         });
