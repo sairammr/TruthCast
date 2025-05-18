@@ -44,22 +44,39 @@ export default function VideoCard({ video }: VideoCardProps) {
   // Fetch user's reaction status on mount or when address/video.id changes
   useEffect(() => {
     const fetchReaction = async () => {
-      if (!address) return;
+      if (!address) {
+        setLiked(false);
+        return;
+      }
       try {
+        const lensAccountAddress = localStorage.getItem("lensAccountAddress");
+        if (!lensAccountAddress) {
+          setLiked(false);
+          return;
+        }
         const result = await fetchPostReactions(lensClient, {
           post: postId(video.id),
+          filter: { anyOf: [PostReactionType.Upvote] },
         });
         if (result.isOk()) {
           const { items } = result.value;
           const userReaction = items.find(
             (item) =>
-              item.account.address.toLowerCase() === address.toLowerCase() &&
-              item.reactions.some((r) => r.reaction === PostReactionType.Upvote)
+              item.account.address.toLowerCase() === lensAccountAddress.toLowerCase()
           );
           setLiked(!!userReaction);
+          console.log('[Lens] Reaction fetch', {
+            lensAccountAddress,
+            videoId: video.id,
+            liked: !!userReaction,
+            items,
+          });
+        } else {
+          setLiked(false);
         }
       } catch (err) {
-        // Optionally handle error
+        setLiked(false);
+        console.error('[Lens] Reaction fetch error', err);
       }
     };
     fetchReaction();
@@ -112,7 +129,30 @@ export default function VideoCard({ video }: VideoCardProps) {
           return;
         }
         setLikeCount(likeCount + 1);
-        setLiked(true);
+        // Re-fetch reaction to ensure backend state is reflected
+        setTimeout(() => {
+          const lensAccountAddress = localStorage.getItem("lensAccountAddress");
+          if (!lensAccountAddress) {
+            setLiked(false);
+            return;
+          }
+          fetchPostReactions(lensClient, { post: postId(video.id), filter: { anyOf: [PostReactionType.Upvote] } }).then((result) => {
+            if (result.isOk()) {
+              const { items } = result.value;
+              const userReaction = items.find(
+                (item) =>
+                  item.account.address.toLowerCase() === lensAccountAddress.toLowerCase()
+              );
+              setLiked(!!userReaction);
+              console.log('[Lens] Reaction re-fetch after upvote', {
+                lensAccountAddress,
+                videoId: video.id,
+                liked: !!userReaction,
+                items,
+              });
+            }
+          });
+        }, 800);
         toast.success("Upvoted!");
       } else {
         // Undo upvote
@@ -129,7 +169,30 @@ export default function VideoCard({ video }: VideoCardProps) {
           return;
         }
         setLikeCount(likeCount - 1);
-        setLiked(false);
+        // Re-fetch reaction to ensure backend state is reflected
+        setTimeout(() => {
+          const lensAccountAddress = localStorage.getItem("lensAccountAddress");
+          if (!lensAccountAddress) {
+            setLiked(false);
+            return;
+          }
+          fetchPostReactions(lensClient, { post: postId(video.id), filter: { anyOf: [PostReactionType.Upvote] } }).then((result) => {
+            if (result.isOk()) {
+              const { items } = result.value;
+              const userReaction = items.find(
+                (item) =>
+                  item.account.address.toLowerCase() === lensAccountAddress.toLowerCase()
+              );
+              setLiked(!!userReaction);
+              console.log('[Lens] Reaction re-fetch after unlike', {
+                lensAccountAddress,
+                videoId: video.id,
+                liked: !!userReaction,
+                items,
+              });
+            }
+          });
+        }, 800);
         toast.success("Upvote removed!");
       }
     } catch (error) {
