@@ -101,7 +101,9 @@ export default function OnboardingPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-[#f5f5f5] dark:bg-black relative overflow-hidden">
       {/* Background elements */}
-
+<div className="absolute top-5 right-5">
+    <ConnectKitButton theme="retro" />
+</div>
       <motion.div
         className="absolute top-10 left-10 w-20 h-20 bg-[#004aad] rounded-full opacity-20"
         animate={{
