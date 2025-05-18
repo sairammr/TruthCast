@@ -20,6 +20,7 @@ import { useLensStore } from "@/lib/useLensStore";
 import { lensClient } from "@/lib/lens";
 import { signMessageWith } from "@lens-protocol/client/viem";
 import FollowButton from "./follow-button";
+import { useRouter } from "next/navigation";
 
 interface VideoCardProps {
   video: {
@@ -40,7 +41,7 @@ export default function VideoCard({ video }: VideoCardProps) {
 
   const { address, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
-
+  const router = useRouter();
 
 
   // Fetch user's reaction status on mount or when address/video.id changes
@@ -206,7 +207,7 @@ export default function VideoCard({ video }: VideoCardProps) {
 
 
   return (
-    <Card className="mb-6 brutalist-card overflow-hidden">
+    <Card className="mb-6 brutalist-card overflow-hidden" onClick={() => router.push(`/post/${video.id}`)}>
       <CardHeader className="p-4 pb-0">
         <div className="flex items-center space-x-2">
           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
@@ -284,7 +285,7 @@ export default function VideoCard({ video }: VideoCardProps) {
           </Button>
         </motion.div>
       </CardFooter>
-      {showComments && (
+      {!showComments && (
         <div className="px-4 pb-4">
           <CommentSection postid={video.id} initialComments={[]} />
         </div>
