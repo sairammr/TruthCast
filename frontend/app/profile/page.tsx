@@ -3,18 +3,18 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Settings, Grid, BookMarked, ArrowLeft, LogOut } from "lucide-react";
+import { Grid, BookMarked, ArrowLeft, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navigation from "@/components/navigation";
 import { evmAddress } from "@lens-protocol/client";
-import { fetchAccount } from "@lens-protocol/client/actions";
+import { fetchAccount, fetchPosts } from "@lens-protocol/client/actions";
 import { lensClient } from "@/lib/lens";
 
 export default function ProfilePage() {
   const router = useRouter();
-  // const [videos, setVideos] = useState<Video[]>([]);
+  const [videos, setVideos] = useState<any[]>([]);
   const [selectedVideo, setSelectedVideo] = useState<number | null>(null);
   const [accountAddress, setAccountAddress] = useState<string>("");
   const [ensName, setEnsName] = useState<string>("");
@@ -41,6 +41,28 @@ export default function ProfilePage() {
           }
         } catch (err) {
           console.error("Error fetching Lens profile/account:", err);
+        }
+      })();
+
+      // Fetch user's videos/posts
+      (async () => {
+        try {
+          const result = await fetchPosts(lensClient, {
+            filter: {
+              authors: [evmAddress(address)],
+            },
+          });
+          if (result.isErr()) {
+            console.error("Lens fetchPosts error:", result.error);
+          } else {
+            // Only keep posts with VideoMetadata
+            const items = result.value.items.filter(
+              (post: any) => post.metadata?.__typename === "VideoMetadata"
+            );
+            setVideos(items);
+          }
+        } catch (err) {
+          console.error("Error fetching Lens posts:", err);
         }
       })();
     }
@@ -139,19 +161,27 @@ export default function ProfilePage() {
               </TabsList>
               <TabsContent value="videos" className="mt-4">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {/* {videos.map((video, index) => (
+                  {videos.length === 0 && (
+                    <div className="col-span-full text-center text-gray-500">No videos found.</div>
+                  )}
+                  {videos.map((video, index) => (
                     <motion.div
                       key={video.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: 0.1 * index }}
+                      className="cursor-pointer"
+                      onClick={() => setSelectedVideo(video.id)}
                     >
-                      <VideoThumbnail
-                        video={video}
-                        onClick={() => setSelectedVideo(video.id)}
+                      <video
+                        src={video.metadata?.video?.item}
+                        className="w-full aspect-video rounded brutalist-box"
+                        controls={false}
+                        poster={video.metadata?.coverPicture || undefined}
                       />
+                      <div className="mt-2 text-sm font-semibold">{video.metadata?.title || "Untitled Video"}</div>
                     </motion.div>
-                  ))} */}
+                  ))}
                 </div>
               </TabsContent>
               <TabsContent value="saved" className="mt-4">
@@ -173,24 +203,35 @@ export default function ProfilePage() {
       <Navigation />
 
       {selectedVideo && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedVideo(null)}
-        >
-          <motion.div
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0.9 }}
-            className="w-full max-w-3xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* <VideoCard video={videos.find((v) => v.id === selectedVideo)!} /> */}
-          </motion.div>
-        </motion.div>
-      )}
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+    onClick={() => setSelectedVideo(null)}
+  >
+    <motion.div
+      initial={{ scale: 0.9 }}
+      animate={{ scale: 1 }}
+      exit={{ scale: 0.9 }}
+      className="w-full max-w-3xl bg-black rounded-lg overflow-hidden"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {(() => {
+        const video = videos.find((v) => v.id === selectedVideo);
+        if (!video) return null;
+        return (
+          <video
+            src={video.metadata?.video?.item}
+            className="w-full aspect-video"
+            controls
+            autoPlay
+          />
+        );
+      })()}
+    </motion.div>
+  </motion.div>
+)}
     </div>
   );
 }

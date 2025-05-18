@@ -2,3 +2,5 @@ frontend/.env
 frontend/.env
 frontend/package-lock.json
 frontend/bun.lock
+keys/private_key_2048.pem
+/keys

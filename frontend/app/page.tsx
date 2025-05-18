@@ -12,9 +12,8 @@ import { signMessageWith } from "@lens-protocol/client/viem";
 import { toast } from "sonner";
 import { evmAddress } from "@lens-protocol/client";
 import { fetchAccount, fetchAccountsBulk } from "@lens-protocol/client/actions";
-import { useLensStore } from "@/lib/store/lens-store";
-
 import { useLensStore } from "@/lib/useLensStore";
+
 
 export default function OnboardingPage() {
   const router = useRouter();

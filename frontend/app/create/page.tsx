@@ -24,7 +24,6 @@ import Navigation from "@/components/navigation";
 import { LensPostVideo } from "@/components/lens-post-video";
 import { useAccount } from "wagmi";
 import { ConnectKitButton } from "connectkit";
-import { useLensStore } from "@/lib/store/lens-store";
 
 // Server URL for steganography API
 // Fix: Use the correct API endpoint with path
