@@ -36,7 +36,7 @@ export default function RootLayout({
       <Web3Provider>
         <body className={`${spaceGrotesk.className} h-full bg-[#f2f2f2] flex justify-center`}>
           <div className="w-full max-w-[420px] h-full bg-white shadow-xl overflow-hidden relative">
-            <ConnectButton />
+           
             <ThemeProvider
               attribute="class"
               defaultTheme="light"

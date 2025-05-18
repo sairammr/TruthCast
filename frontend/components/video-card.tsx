@@ -94,15 +94,26 @@ export default function VideoCard({ video }: VideoCardProps) {
       return;
     }
     let client = sessionClient;
+    const lensAccountAddress = localStorage.getItem("lensAccountAddress");
     if (!client) {
-      const lensAccountAddress = localStorage.getItem("lensAccountAddress");
+      
       if (!lensAccountAddress) {
         toast.error("No Lens account found. Please create or connect your Lens profile.");
         return;
       }
-      
-      client = localStorage.getItem("sessionClient")
-      console.log('client', client);
+      const loginResult = await lensClient.login({
+        accountOwner: {
+          app: process.env.NEXT_PUBLIC_LENS_APP_ID,
+          owner: address,
+          account: lensAccountAddress,
+        },
+        signMessage: signMessageWith(walletClient),
+      });
+      if (loginResult.isErr()) {
+        toast.error("Lens authentication failed");
+        return;
+      }
+      client = loginResult.value;
       setSessionClient(client);
     }
     try {

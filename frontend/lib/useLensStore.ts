@@ -1,11 +1,22 @@
 import { create } from "zustand";
+import { LensClient } from '@lens-protocol/client';
 
-interface LensStore {
-  sessionClient: any; // Replace `any` with a more specific type if available
-  setSessionClient: (client: any) => void;
+interface LensState {
+  sessionClient: LensClient | null;
+  setSessionClient: (client: LensClient) => void;
+  followStatus: Record<string, boolean>;
+  setFollowStatus: (accountId: string, isFollowing: boolean) => void;
 }
 
-export const useLensStore = create<LensStore>((set) => ({
+export const useLensStore = create<LensState>((set) => ({
   sessionClient: null,
   setSessionClient: (client) => set({ sessionClient: client }),
+  followStatus: {},
+  setFollowStatus: (accountId, isFollowing) => 
+    set((state) => ({
+      followStatus: {
+        ...state.followStatus,
+        [accountId]: isFollowing,
+      },
+    })),
 }));
