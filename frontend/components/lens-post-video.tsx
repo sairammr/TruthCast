@@ -181,8 +181,8 @@ export function LensPostVideo({
 
  
   return (
-    <div className="flex flex-col space-y-4 p-6 bg-white dark:bg-gray-900 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold">Share to Lens Protocol</h2>
+    <div className="flex flex-col space-y-4 p-6 bg-white dark:bg-gray-900 rounded-lg shadow-md max-w-[350px] mx-auto">
+      <h2 className="text-xl font-bold">Share to TruthCaster</h2>
       
       <div className="space-y-3">
         <div className="space-y-2">
@@ -216,30 +216,22 @@ export function LensPostVideo({
           />
         </div>
         
-        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-          <div className="flex-shrink-0 h-8 w-8 rounded-full bg-[#10b981] flex items-center justify-center text-white">
-
-          </div>
-          <span className="ml-2">
-           
-          </span>
-        </div>
         
         <div className="flex space-x-3 pt-2">
           <Button
             variant="outline"
             onClick={onClose}
-            className="flex-1"
+            className="flex-1 hover:bg-red-500 hover:text-white"
             disabled={isPosting}
           >
             Cancel
           </Button>
           <Button
             onClick={handlePost}
-            className="flex-1 bg-[#10b981] hover:bg-[#0d8c6a]"
+            className="flex-1 bg-[#004aad] hover:bg-[#004aee] hover:text-white"
             disabled={isPosting}
           >
-            {isPosting ? "Posting..." : "Post to Lens"}
+            {isPosting ? "Posting..." : "Post to TruthCaster"}
           </Button>
         </div>
       </div>

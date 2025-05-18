@@ -98,19 +98,9 @@ export default function VideoCard({ video }: VideoCardProps) {
         toast.error("No Lens account found. Please create or connect your Lens profile.");
         return;
       }
-      const loginResult = await lensClient.login({
-        accountOwner: {
-          app: process.env.NEXT_PUBLIC_LENS_APP_ID,
-          owner: address,
-          account: lensAccountAddress,
-        },
-        signMessage: signMessageWith(walletClient),
-      });
-      if (loginResult.isErr()) {
-        toast.error("Lens authentication failed");
-        return;
-      }
-      client = loginResult.value;
+      
+      client = localStorage.getItem("sessionClient")
+      console.log('client', client);
       setSessionClient(client);
     }
     try {
@@ -282,7 +272,7 @@ export default function VideoCard({ video }: VideoCardProps) {
       </CardFooter>
       {showComments && (
         <div className="px-4 pb-4">
-          <CommentSection postId={video.id} initialComments={[]} />
+          <CommentSection postid={video.id} initialComments={[]} />
         </div>
       )}
     </Card>

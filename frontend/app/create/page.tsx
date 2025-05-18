@@ -574,14 +574,6 @@ export default function CreatePage() {
                 src={getCurrentVideoUrl() || undefined}
               />
             </div>
-
-            <div className="mt-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs md:text-sm text-gray-700 dark:text-gray-300">
-              <p>
-                <strong>Note:</strong> The MP4 format is compatible with most
-                platforms but only preserves the border data. The MOV format
-                preserves both the deep truth data and border data.
-              </p>
-            </div>
           </div>
         )}
 
@@ -593,10 +585,10 @@ export default function CreatePage() {
             </div>
             <input
               type="text"
-              value={videoTitle}
               onChange={(e) => setVideoTitle(e.target.value)}
               placeholder="Give your video a title"
               className="w-full p-2 md:p-3 rounded-md border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-black dark:text-white"
+              required
             />
           </div>
         )}
@@ -607,49 +599,6 @@ export default function CreatePage() {
             <h3 className="font-bold text-base md:text-lg mb-3 text-black dark:text-white">
               Share your Deep Truth
             </h3>
-
-            <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-4">
-              <Button
-                onClick={() => shareToSocial("twitter")}
-                className="flex items-center gap-1 md:gap-2 bg-[#1DA1F2] hover:bg-[#1a94df] text-xs md:text-sm py-1 md:py-2"
-              >
-                <Twitter size={16} />
-                <span className="hidden xs:inline">Twitter</span>
-              </Button>
-
-              <Button
-                onClick={() => shareToSocial("facebook")}
-                className="flex items-center gap-1 md:gap-2 bg-[#4267B2] hover:bg-[#375694] text-xs md:text-sm py-1 md:py-2"
-              >
-                <Facebook size={16} />
-                <span className="hidden xs:inline">Facebook</span>
-              </Button>
-
-              <Button
-                onClick={() => shareToSocial("linkedin")}
-                className="flex items-center gap-1 md:gap-2 bg-[#0077B5] hover:bg-[#006396] text-xs md:text-sm py-1 md:py-2"
-              >
-                <Linkedin size={16} />
-                <span className="hidden xs:inline">LinkedIn</span>
-              </Button>
-
-              <Button
-                onClick={() => shareToSocial("instagram")}
-                className="flex items-center gap-1 md:gap-2 bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#FCAF45] hover:opacity-90 text-xs md:text-sm py-1 md:py-2"
-              >
-                <Instagram size={16} />
-                <span className="hidden xs:inline">Instagram</span>
-              </Button>
-
-              <Button
-                onClick={() => shareToSocial("copy")}
-                className="flex items-center gap-1 md:gap-2 bg-gray-600 hover:bg-gray-700 text-xs md:text-sm py-1 md:py-2"
-              >
-                <Copy size={16} />
-                <span className="hidden xs:inline">Copy Link</span>
-              </Button>
-            </div>
-
             <div className="flex flex-col space-y-3">
               <Button
                 onClick={downloadVideo}
@@ -662,7 +611,7 @@ export default function CreatePage() {
               {/* Add Lens Protocol Post Button */}
               <Button
                 onClick={handlePostToLens}
-                className="flex items-center gap-2 w-full bg-[#00501E] hover:bg-[#003A15] text-sm md:text-base"
+                className="flex items-center gap-2 w-full bg-[#004aad] hover:bg-[#004aee] text-sm md:text-base"
               >
                 <svg
                   width="18"
@@ -676,7 +625,7 @@ export default function CreatePage() {
                     fill="currentColor"
                   />
                 </svg>
-                Post to Lens Protocol
+                Post to TruthCaster
               </Button>
             </div>
           </div>
@@ -764,14 +713,14 @@ export default function CreatePage() {
 
             {/* Action buttons */}
             <div className="flex flex-col space-y-2 md:space-y-4">
-              {!stream && !isUploading && !showShareOptions ? (
+              {!stream && !isUploading ? (
                 <Button
                   onClick={() => startCamera()}
                   className="w-full py-3 md:py-6 text-base md:text-lg brutalist-button"
                 >
                   START CAMERA
                 </Button>
-              ) : showPreview && !isUploading && !showShareOptions ? (
+              ) : showPreview && !isUploading ? (
                 <div className="flex space-x-2 md:space-x-4">
                   <Button
                     onClick={retakeVideo}
@@ -797,13 +746,6 @@ export default function CreatePage() {
                 >
                   <Video className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" />
                   {isRecording ? "STOP RECORDING" : "START RECORDING"}
-                </Button>
-              ) : showShareOptions ? (
-                <Button
-                  onClick={() => router.push("/feed")}
-                  className="w-full py-3 md:py-6 text-base md:text-lg brutalist-button"
-                >
-                  VIEW ON FEED
                 </Button>
               ) : null}
             </div>
