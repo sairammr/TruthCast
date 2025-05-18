@@ -13,6 +13,8 @@ import { toast } from "sonner";
 import { evmAddress } from "@lens-protocol/client";
 import { fetchAccount, fetchAccountsBulk } from "@lens-protocol/client/actions";
 
+import { useLensStore } from "@/lib/useLensStore";
+
 export default function OnboardingPage() {
   const router = useRouter();
   const { address, isConnected } = useAccount();
@@ -20,7 +22,16 @@ export default function OnboardingPage() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const setSessionClient = useLensStore((state) => state.setSessionClient);
 
-
+  function getCircularReplacer() {
+    const seen = new WeakSet();
+    return (key: string, value: any) => {
+      if (typeof value === "object" && value !== null) {
+        if (seen.has(value)) return;
+        seen.add(value);
+      }
+      return value;
+    };
+  }
   // Automatically authenticate with Lens when wallet is connected
   useEffect(() => {
     const authenticateWithLens = async () => {
@@ -53,8 +64,19 @@ export default function OnboardingPage() {
           const sessionClient = authenticated.value;
           console.log("Lens authentication successful", { sessionClient });
           localStorage.setItem("lensAccountAddress", result.value[0].address);
-          localStorage.setItem("sessionClient", sessionClient);
-          setSessionClient(sessionClient);
+          console.log("session client", sessionClient);
+          console.log("sessionClient keys:", Object.keys(sessionClient));
+
+          // Helper to handle circular references
+
+
+          try {
+            localStorage.setItem("sessionClient", JSON.stringify(sessionClient, getCircularReplacer()));
+            setSessionClient(sessionClient);
+          } catch (e) {
+            console.error("sessionClient not serializable", e);
+            toast.error("Session could not be saved (not serializable)");
+          }
           toast.success("Connected to Lens Protocol");
 
           router.push("/feed");
