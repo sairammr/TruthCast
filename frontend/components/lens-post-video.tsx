@@ -6,7 +6,6 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
-import { uploadVideoToStorage } from "@/lib/supabase";
 import { toast } from "sonner";
 import { lensClient } from "@/lib/lens";
 import { video, MediaVideoMimeType } from "@lens-protocol/metadata";
@@ -41,7 +40,6 @@ export function LensPostVideo({
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("truthcast,deeptruth");
   const [isPosting, setIsPosting] = useState(false);
-  const setSessionClient = useLensStore((state) => state.setSessionClient);
   const handlePost = async () => {
     console.log("handlePost");
     if (!videoData) {
@@ -138,7 +136,6 @@ export function LensPostVideo({
         if (resumed.isErr()) {
           return console.error(resumed.error);
         }
-        setSessionClient(resumed.value);  
         const sessionClient = resumed.value;
       
       

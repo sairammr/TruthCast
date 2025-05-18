@@ -7,7 +7,6 @@ import { postId, PostReferenceType, uri } from "@lens-protocol/client";
 import { lensClient } from "@/lib/lens";
 import { useAccount, useWalletClient } from "wagmi";
 import { toast } from "sonner";
-import { useLensStore } from "@/lib/useLensStore";
 import { handleOperationWith } from "@lens-protocol/client/viem";
 import { storageClient } from "@/lib/storageClient";
 import { textOnly } from "@lens-protocol/metadata";
@@ -34,8 +33,7 @@ export default function CommentSection({ postid, initialComments = [], onAddComm
 
   const { address, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
-  const sessionClient = useLensStore((state) => state.sessionClient);
-  const setSessionClient = useLensStore((state) => state.setSessionClient);
+
 
   // Fetch comments when component mounts
   useEffect(() => {
