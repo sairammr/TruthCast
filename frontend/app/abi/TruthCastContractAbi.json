@@ -1,0 +1,104 @@
+{
+	"compiler": {
+		"version": "0.8.30+commit.73712a01"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "title",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "description",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "duration",
+						"type": "uint256"
+					}
+				],
+				"name": "createSecret",
+				"outputs": [
+					{
+						"internalType": "bytes32",
+						"name": "secretHash",
+						"type": "bytes32"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "secretHash",
+						"type": "bytes32"
+					}
+				],
+				"name": "verifySecret",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "title",
+						"type": "string"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/truthCast.sol": "TruthCast"
+		},
+		"evmVersion": "prague",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/truthCast.sol": {
+			"keccak256": "0xa3e21574bf772212bf8577f3242a18cf2769d37ebb363d1f78a373f74ac92b04",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://609beeac91b2ec33c91b099bf7995acdbaa5119ae96c3f60607bf97e59d3af37",
+				"dweb:/ipfs/QmcPGbMBfqJ4aEnEvKPenFReBBUBC2kT9zUFW45m7cUtuR"
+			]
+		}
+	},
+	"version": 1
+}
