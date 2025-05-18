@@ -62,7 +62,7 @@ export function LensPostVideo({
         accountOwner: {
         app: process.env.NEXT_PUBLIC_LENS_APP_ID,
           owner: evmAddress(address),
-          account: evmAddress("0x0000000000000000000000000000000000000000"),//need to replace with the address of the account
+          account: localStorage.getItem("lensAccountAddress"),//need to replace with the address of the account
           //account needs to be replaces with the address of the account 
           // (not user wallet address. A new address is created for a lens account)
         },

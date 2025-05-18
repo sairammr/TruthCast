@@ -11,13 +11,15 @@ import { lensClient } from "@/lib/lens";
 import { signMessageWith } from "@lens-protocol/client/viem";
 import { toast } from "sonner";
 import { evmAddress } from "@lens-protocol/client";
-import { fetchAccount } from "@lens-protocol/client/actions";
+import { fetchAccount, fetchAccountsBulk } from "@lens-protocol/client/actions";
 
 export default function OnboardingPage() {
   const router = useRouter();
   const { address, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const setSessionClient = useLensStore((state) => state.setSessionClient);
+
 
   // Automatically authenticate with Lens when wallet is connected
   useEffect(() => {
@@ -27,28 +29,35 @@ export default function OnboardingPage() {
           setIsAuthenticating(true);
           //check for owner of this wallet address
           try{
-            const result = await fetchAccount(lensClient, {
-              
-                
-                username: {
-                  localName: "sairammr",
-                },
-              
+
+            // this logic is not implemented have confusions in the implementation
+            const result = await fetchAccountsBulk(lensClient, {
+              ownedBy: [evmAddress(address)],
             });
+
+            
             console.log("result", result);
+            if (result.value.length === 0){
+              router.push("/register");
+              return;
+            }
             
           const authenticated = await lensClient.login({
             accountOwner: {
-              app: "0x6d975C4aD2434F2c5C9213d4dE38AfD63498f37E", // App ID
+              app: process.env.NEXT_PUBLIC_LENS_APP_ID, // App ID
               owner: evmAddress(address),
-              account: evmAddress(address),
+              account: result.value[0].address,
             },
             signMessage: signMessageWith(walletClient),
           })
           const sessionClient = authenticated.value;
           console.log("Lens authentication successful", { sessionClient });
-          toast.success("Connected to Lens Protocol");
+          localStorage.setItem("lensAccountAddress", result.value[0].address);
           localStorage.setItem("sessionClient", sessionClient);
+          setSessionClient(sessionClient);
+          toast.success("Connected to Lens Protocol");
+
+          router.push("/feed");
           ;}
           catch(error){
             console.error("Error authenticating with Lens:", error);
