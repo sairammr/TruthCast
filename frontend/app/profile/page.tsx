@@ -7,8 +7,10 @@ import { Settings, Grid, BookMarked, ArrowLeft, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ethers } from "ethers";
 import Navigation from "@/components/navigation";
+import { evmAddress } from "@lens-protocol/client";
+import { fetchAccount } from "@lens-protocol/client/actions";
+import { lensClient } from "@/lib/lens";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -16,19 +18,31 @@ export default function ProfilePage() {
   const [selectedVideo, setSelectedVideo] = useState<number | null>(null);
   const [accountAddress, setAccountAddress] = useState<string>("");
   const [ensName, setEnsName] = useState<string>("");
+  const [lensProfile, setLensProfile] = useState<any>(null);
 
   useEffect(() => {
     // Get account address from localStorage
-    const address = localStorage.getItem("accountAddress");
+    const address = localStorage.getItem("lensAccountAddress");
     if (address) {
+      console.log(address);
       setAccountAddress(address);
-      // Try to resolve ENS name
-      const provider = new ethers.JsonRpcProvider(
-        "https://worldchain.drpc.org"
-      );
-      provider.lookupAddress(address).then((name) => {
-        if (name) setEnsName(name);
-      });
+      
+      // Fetch Lens profile details
+      (async () => {
+        try {
+          const result = await fetchAccount(lensClient, {
+            address: evmAddress(address),
+          });
+          if (result.isErr()) {
+            console.error("Lens fetchAccount error:", result.error);
+          } else {
+            console.log("Lens profile/account:", result.value);
+            setLensProfile(result.value);
+          }
+        } catch (err) {
+          console.error("Error fetching Lens profile/account:", err);
+        }
+      })();
     }
   }, []);
 
@@ -48,7 +62,7 @@ export default function ProfilePage() {
               onClick={() => router.push("/feed")}
               className="brutalist-box bg-white dark:bg-black"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="w-5 h-5" />
             </Button>
           </motion.div>
           <h1 className="text-xl font-bold">
@@ -88,20 +102,16 @@ export default function ProfilePage() {
             transition={{ duration: 0.5 }}
           >
             <Avatar className="w-20 h-20 border-2 border-black dark:border-white mb-4">
-              <AvatarImage src="/placeholder.svg?height=80&width=80" />
+              <AvatarImage src={lensProfile?.metadata?.picture || lensProfile?.metadata?.coverPicture || "/placeholder.svg?height=80&width=80"} />
               <AvatarFallback>
-                {accountAddress.slice(0, 2).toUpperCase()}
+                {(lensProfile?.metadata?.name?.charAt(0) || accountAddress.slice(0, 2).toUpperCase() || "?")}
               </AvatarFallback>
             </Avatar>
-            {ensName ? (
-              <h2 className="text-xl font-bold">{ensName}</h2>
-            ) : (
-              <h2 className="text-xl font-bold font-mono">
-                {accountAddress.slice(0, 6)}...{accountAddress.slice(-4)}
-              </h2>
-            )}
+            <h2 className="text-xl font-bold">
+              {lensProfile?.metadata?.name || ensName || `${accountAddress.slice(0, 6)}...${accountAddress.slice(-4)}`}
+            </h2>
             <p className="text-gray-600 dark:text-gray-400 mt-2 text-center font-mono">
-              {accountAddress}
+              {lensProfile?.metadata?.bio || "No bio available."}
             </p>
           </motion.div>
 

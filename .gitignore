@@ -1,3 +1,4 @@
 frontend/.env
 frontend/.env
 frontend/package-lock.json
+frontend/bun.lock
