@@ -12,7 +12,8 @@ import { signMessageWith } from "@lens-protocol/client/viem";
 import { toast } from "sonner";
 import { evmAddress } from "@lens-protocol/client";
 import { fetchAccount, fetchAccountsBulk } from "@lens-protocol/client/actions";
-import { useLensStore } from "@/lib/useLensStore";
+
+
 
 
 export default function OnboardingPage() {
@@ -20,7 +21,6 @@ export default function OnboardingPage() {
   const { address, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
   const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const setSessionClient = useLensStore((state) => state.setSessionClient);
 
   function getCircularReplacer() {
     const seen = new WeakSet();
@@ -48,7 +48,7 @@ export default function OnboardingPage() {
 
             
             console.log("result", result);
-            if (result.value.length === 0){
+            if (result.isOk() && result.value.length === 0){
               router.push("/register");
               return;
             }
@@ -57,22 +57,21 @@ export default function OnboardingPage() {
             accountOwner: {
               app: process.env.NEXT_PUBLIC_LENS_APP_ID, // App ID
               owner: evmAddress(address),
-              account: result.value[0].address,
+              account: result.isOk() ? result.value[0].address : "",
             },
             signMessage: signMessageWith(walletClient),
           })
-          const sessionClient = authenticated.value;
+          const sessionClient = authenticated.isOk() ? authenticated.value : null;
           console.log("Lens authentication successful", { sessionClient });
-          localStorage.setItem("lensAccountAddress", result.value[0].address);
+          localStorage.setItem("lensAccountAddress", result.isOk() ? result.value[0].address : "");
           console.log("session client", sessionClient);
-          console.log("sessionClient keys:", Object.keys(sessionClient));
+          console.log("sessionClient keys:", sessionClient ? Object.keys(sessionClient) : "No session client");
 
           // Helper to handle circular references
 
 
           try {
             localStorage.setItem("sessionClient", JSON.stringify(sessionClient, getCircularReplacer()));
-            setSessionClient(sessionClient);
           } catch (e) {
             console.error("sessionClient not serializable", e);
             toast.error("Session could not be saved (not serializable)");
@@ -88,15 +87,7 @@ export default function OnboardingPage() {
             setIsAuthenticating(false);
             return;
           }
-          
-
         
-
-          // Authentication successful
-         
-          
-          // Optionally redirect to Lens page
-          // router.push("/lens");
         } catch (error) {
           console.error("Error authenticating with Lens:", error);
           toast.error("Failed to connect to Lens Protocol");

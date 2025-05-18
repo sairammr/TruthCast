@@ -48,7 +48,7 @@ export default function CommentSection({ postid, initialComments = [], onAddComm
         });
         console.log('result', result);
         
-        const items = result.value.items || [];
+        const items = result.isOk() ? result.value.items : [];
         const formattedComments = items.map((comment: any) => ({
           id: comment.id,
           author: comment.author?.username?.localName || "anonymous",
