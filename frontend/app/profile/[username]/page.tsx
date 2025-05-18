@@ -314,7 +314,7 @@ export default function ProfilePage() {
                          
                         >
                           <video
-                            onClick={() => router.push(`/profile/${video.slug}`)}
+                            onClick={() => router.push(`/post/${video.slug}`)}
                             src={video.metadata?.video?.item}
                             className="w-full aspect-video rounded brutalist-box"
                             controls={false}
