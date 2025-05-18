@@ -10,8 +10,10 @@ import { createAccountWithUsername, fetchAccount } from "@lens-protocol/client/a
 import { handleOperationWith } from "@lens-protocol/client/viem"
 import { never } from "@lens-protocol/client"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 export default function RegisterPage() {
+  const router = useRouter()
   const { address } = useAccount()
   const { data: walletClient } = useWalletClient()
   const [isLoading, setIsLoading] = useState(false)
@@ -88,6 +90,7 @@ export default function RegisterPage() {
       }
 
       toast.success("Account created successfully!")
+      router.push("/feed")
     } catch (error) {
       console.error(error)
       toast.error(error instanceof Error ? error.message : "Failed to create account")

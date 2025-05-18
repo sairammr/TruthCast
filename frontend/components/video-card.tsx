@@ -26,6 +26,7 @@ interface VideoCardProps {
   video: {
     id: string;
     username: string;
+    slug: string;
     videoUrl: string;
     caption: string;
     likes: number;
@@ -140,7 +141,7 @@ export default function VideoCard({ video }: VideoCardProps) {
             setLiked(false);
             return;
           }
-          fetchPostReactions(lensClient, { post: postId(video.id), filter: { anyOf: [PostReactionType.Upvote] } }).then((result) => {
+          fetchPostReactions(lensClient, { post: postId(video.slug), filter: { anyOf: [PostReactionType.Upvote] } }).then((result) => {
             if (result.isOk()) {
               const { items } = result.value;
               const userReaction = items.find(
@@ -207,10 +208,10 @@ export default function VideoCard({ video }: VideoCardProps) {
 
 
   return (
-    <Card className="mb-6 brutalist-card overflow-hidden" onClick={() => router.push(`/post/${video.id}`)}>
+    <Card className="mb-6 brutalist-card overflow-hidden" >
       <CardHeader className="p-4 pb-0">
         <div className="flex items-center space-x-2">
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => router.push(`/profile/${video.username}`)} className="cursor-pointer"  >
             <Avatar className="w-10 h-10 border-2 border-black dark:border-white">
               <AvatarImage src="/placeholder.svg?height=40&width=40" />
               <AvatarFallback>{video.username[0].toUpperCase()}</AvatarFallback>

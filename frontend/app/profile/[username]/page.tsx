@@ -33,6 +33,7 @@ type AccountData = {
 
 type VideoPost = {
   id: string;
+  slug: string;
   metadata?: {
     title?: string | null;
     video?: {
@@ -193,6 +194,7 @@ export default function ProfilePage() {
           .filter((post: any) => post.metadata?.__typename === "VideoMetadata")
           .map((post: any) => ({
             id: post.id,
+            slug: post.slug,
             metadata: {
               title: post.metadata?.title || null,
               video: post.metadata?.video ? {
@@ -323,9 +325,10 @@ export default function ProfilePage() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.5, delay: 0.1 * index }}
                           className="cursor-pointer"
-                          onClick={() => setSelectedVideo(video.id)}
+                         
                         >
                           <video
+                            onClick={() => router.push(`/post/${video.slug}`)}
                             src={video.metadata?.video?.item}
                             className="w-full aspect-video rounded brutalist-box"
                             controls={false}

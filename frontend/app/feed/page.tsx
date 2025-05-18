@@ -46,6 +46,7 @@ export default function FeedPage() {
             console.log('FeedPage: post.id', post.id, '->', id, typeof id);
             return {
               id,
+              slug: post.slug,
               username: post.author.username?.localName || "anonymous",
               videoUrl: post.metadata.video?.item || "",
               caption: post.metadata.content || "",

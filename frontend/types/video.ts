@@ -1,5 +1,6 @@
 export interface Video {
   id: string;
+  slug: string;
   username: string;
   videoUrl: string;
   caption: string;
