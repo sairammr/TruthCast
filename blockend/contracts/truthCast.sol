@@ -1,50 +1,58 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.30;
+pragma solidity ^0.8.19;
 
-contract TruthCast {
-    struct TruthCastData {
+contract SecretManager {
+    struct SecretData {
         address creator;
         address user;
+        string postId;
         string title;
         string description;
         uint256 duration;
+        bool isComplete;
     }
 
-    mapping(bytes32 => TruthCastData) private secrets;
-
+    mapping(bytes32 => SecretData) private secrets;
     string private constant SALT = "SOMERANDOMSECRET";
-    function createSecret(
-        address user,
+
+    function createPreSecret(address user) external returns (bytes32 secretHash) {
+        secretHash = keccak256(abi.encodePacked(msg.sender, user, SALT));
+
+        secrets[secretHash] = SecretData({
+            creator: msg.sender,
+            user: user,
+            postId: "",
+            title: "",
+            description: "",
+            duration: 0,
+            isComplete: false
+        });
+
+        return secretHash;
+    }
+
+    function associatePostDetails(
+        bytes32 secretHash,
+        string memory postId,
         string memory title,
         string memory description,
         uint256 duration
-    ) external returns (bytes32 secretHash) {
-        secretHash = keccak256(
-            abi.encodePacked(
-                msg.sender,
-                user,
-                title,
-                description,
-                duration,
-                SALT
-            )
-        );
-        secrets[secretHash] = TruthCastData({
-            creator: msg.sender,
-            user: user,
-            title: title,
-            description: description,
-            duration: duration
-        });
-        return secretHash;
+    ) external {
+        SecretData storage data = secrets[secretHash];
+
+        require(data.creator == msg.sender, "Not creator of secret");
+        require(!data.isComplete, "Details already associated");
+
+        data.postId = postId;
+        data.title = title;
+        data.description = description;
+        data.duration = duration;
+        data.isComplete = true;
     }
-    function verifySecret(bytes32 secretHash)
-        external
-        view
-        returns (address user, string memory title)
-    {
-        TruthCastData memory data = secrets[secretHash];
-        require(data.user != address(0), "Secret not found");
-        return (data.user, data.title);
+
+    function verifySecret(bytes32 secretHash) external view returns (string memory title, string memory postId) {
+        SecretData memory data = secrets[secretHash];
+        require(data.isComplete, "Secret not fully associated");
+        return (data.title, data.postId);
     }
 }
