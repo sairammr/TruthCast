@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,11 +10,19 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { Heart, MessageCircle, Share2 } from "lucide-react";
+import CommentSection from "@/components/comment-section";
 import { motion } from "framer-motion";
+import { PostReactionType, postId } from "@lens-protocol/client";
+import { addReaction, undoReaction, fetchPostReactions } from "@lens-protocol/client/actions";
+import { useAccount, useWalletClient } from "wagmi";
+import { toast } from "sonner";
+import { useLensStore } from "@/lib/useLensStore";
+import { lensClient } from "@/lib/lens";
+import { signMessageWith } from "@lens-protocol/client/viem";
 
 interface VideoCardProps {
   video: {
-    id: number;
+    id: string;
     username: string;
     videoUrl: string;
     caption: string;
@@ -26,15 +34,110 @@ interface VideoCardProps {
 export default function VideoCard({ video }: VideoCardProps) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(video.likes);
+  const [showComments, setShowComments] = useState(false);
 
-  const handleLike = () => {
-    if (liked) {
-      setLikeCount(likeCount - 1);
-    } else {
-      setLikeCount(likeCount + 1);
+  const { address, isConnected } = useAccount();
+  const { data: walletClient } = useWalletClient();
+  const sessionClient = useLensStore((state) => state.sessionClient);
+  const setSessionClient = useLensStore((state) => state.setSessionClient);
+
+  // Fetch user's reaction status on mount or when address/video.id changes
+  useEffect(() => {
+    const fetchReaction = async () => {
+      if (!address) return;
+      try {
+        const result = await fetchPostReactions(lensClient, {
+          post: postId(video.id),
+        });
+        if (result.isOk()) {
+          const { items } = result.value;
+          const userReaction = items.find(
+            (item) =>
+              item.account.address.toLowerCase() === address.toLowerCase() &&
+              item.reactions.some((r) => r.reaction === PostReactionType.Upvote)
+          );
+          setLiked(!!userReaction);
+        }
+      } catch (err) {
+        // Optionally handle error
+      }
+    };
+    fetchReaction();
+  }, [address, video.id]);
+
+  const handleLike = async () => {
+    if (!address || !isConnected) {
+      toast.error("Please connect your wallet first");
+      return;
     }
-    setLiked(!liked);
+    if (!walletClient) {
+      toast.error("Wallet client not available");
+      return;
+    }
+    let client = sessionClient;
+    if (!client) {
+      const lensAccountAddress = localStorage.getItem("lensAccountAddress");
+      if (!lensAccountAddress) {
+        toast.error("No Lens account found. Please create or connect your Lens profile.");
+        return;
+      }
+      const loginResult = await lensClient.login({
+        accountOwner: {
+          app: process.env.NEXT_PUBLIC_LENS_APP_ID,
+          owner: address,
+          account: lensAccountAddress,
+        },
+        signMessage: signMessageWith(walletClient),
+      });
+      if (loginResult.isErr()) {
+        toast.error("Lens authentication failed");
+        return;
+      }
+      client = loginResult.value;
+      setSessionClient(client);
+    }
+    try {
+      if (!liked) {
+        // Add upvote
+        console.log('Reacting to video:', video);
+        console.log('video.id:', video.id, typeof video.id);
+        const pid = postId(video.id);
+        console.log('postId(video.id):', pid, typeof pid);
+        const result = await addReaction(client, {
+          post: pid,
+          reaction: PostReactionType.Upvote,
+        });
+        if (result.isErr()) {
+          toast.error("Failed to upvote");
+          return;
+        }
+        setLikeCount(likeCount + 1);
+        setLiked(true);
+        toast.success("Upvoted!");
+      } else {
+        // Undo upvote
+        console.log('Undo reaction for video:', video);
+        console.log('video.id:', video.id, typeof video.id);
+        const pid = postId(video.id);
+        console.log('postId(video.id):', pid, typeof pid);
+        const result = await undoReaction(client, {
+          post: pid,
+          reaction: PostReactionType.Upvote,
+        });
+        if (result.isErr()) {
+          toast.error("Failed to remove upvote");
+          return;
+        }
+        setLikeCount(likeCount - 1);
+        setLiked(false);
+        toast.success("Upvote removed!");
+      }
+    } catch (error) {
+      toast.error("Error updating reaction");
+      console.error(error);
+    }
   };
+
 
   return (
     <Card className="mb-6 brutalist-card overflow-hidden">
@@ -92,6 +195,8 @@ export default function VideoCard({ video }: VideoCardProps) {
               variant="ghost"
               size="sm"
               className="flex items-center space-x-1 px-2 font-bold"
+              onClick={() => setShowComments((prev) => !prev)}
+              aria-label="Show comments"
             >
               <MessageCircle className="h-5 w-5" />
               <span>{video.comments}</span>
@@ -112,6 +217,11 @@ export default function VideoCard({ video }: VideoCardProps) {
           </Button>
         </motion.div>
       </CardFooter>
+      {showComments && (
+        <div className="px-4 pb-4">
+          <CommentSection postId={video.id} initialComments={[]} />
+        </div>
+      )}
     </Card>
   );
 }

@@ -40,24 +40,28 @@ export default function FeedPage() {
             (post): post is Post & { metadata: VideoMetadata } =>
               post.metadata.__typename === "VideoMetadata"
           )
-          .map((post) => ({
-            id: Number(post.id),
-            username: post.author.username?.localName || "anonymous",
-            videoUrl: post.metadata.video?.item || "",
-            caption: post.metadata.content || "",
-            title: post.metadata.title || "",
-            tags: post.metadata.tags || [],
-            likes: post.stats.upvotes || 0,
-            comments: post.stats.comments || 0,
-            author: {
-              name:
-                post.author.metadata?.name ||
-                post.author.username?.localName ||
-                "anonymous",
-              bio: post.author.metadata?.bio || "",
-              picture: post.author.metadata?.picture || "",
-            },
-          }));
+          .map((post) => {
+            const id = typeof post.id === "string" ? post.id : String(post.id);
+            console.log('FeedPage: post.id', post.id, '->', id, typeof id);
+            return {
+              id,
+              username: post.author.username?.localName || "anonymous",
+              videoUrl: post.metadata.video?.item || "",
+              caption: post.metadata.content || "",
+              title: post.metadata.title || "",
+              tags: post.metadata.tags || [],
+              likes: post.stats.upvotes || 0,
+              comments: post.stats.comments || 0,
+              author: {
+                name:
+                  post.author.metadata?.name ||
+                  post.author.username?.localName ||
+                  "anonymous",
+                bio: post.author.metadata?.bio || "",
+                picture: post.author.metadata?.picture || "",
+              },
+            };
+          });
         setVideos(formatted);
       }
     };
