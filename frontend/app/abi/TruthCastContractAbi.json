@@ -8,9 +8,14 @@
 			{
 				"inputs": [
 					{
-						"internalType": "address",
-						"name": "user",
-						"type": "address"
+						"internalType": "bytes32",
+						"name": "secretHash",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "string",
+						"name": "postId",
+						"type": "string"
 					},
 					{
 						"internalType": "string",
@@ -28,7 +33,20 @@
 						"type": "uint256"
 					}
 				],
-				"name": "createSecret",
+				"name": "associatePostDetails",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "createPreSecret",
 				"outputs": [
 					{
 						"internalType": "bytes32",
@@ -50,13 +68,13 @@
 				"name": "verifySecret",
 				"outputs": [
 					{
-						"internalType": "address",
-						"name": "user",
-						"type": "address"
+						"internalType": "string",
+						"name": "title",
+						"type": "string"
 					},
 					{
 						"internalType": "string",
-						"name": "title",
+						"name": "postId",
 						"type": "string"
 					}
 				],
@@ -77,7 +95,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"contracts/truthCast.sol": "TruthCast"
+			"contracts/truthCast.sol": "SecretManager"
 		},
 		"evmVersion": "prague",
 		"libraries": {},
@@ -92,11 +110,11 @@
 	},
 	"sources": {
 		"contracts/truthCast.sol": {
-			"keccak256": "0xa3e21574bf772212bf8577f3242a18cf2769d37ebb363d1f78a373f74ac92b04",
+			"keccak256": "0x3b07db1d39c9b606aae9de6d55f15d9c625bc7470705f210e61ccb0e5cf35ecf",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://609beeac91b2ec33c91b099bf7995acdbaa5119ae96c3f60607bf97e59d3af37",
-				"dweb:/ipfs/QmcPGbMBfqJ4aEnEvKPenFReBBUBC2kT9zUFW45m7cUtuR"
+				"bzz-raw://45303069f0615cb8a318b2cb263d2a5abe1070e830a2901fe6ec7bc31c5bcf4b",
+				"dweb:/ipfs/QmV1mUzxDJYwgNXrR51E6g4PZvqXZnwhK9dCKqK8ZFkKYk"
 			]
 		}
 	},
