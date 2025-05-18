@@ -63,46 +63,6 @@ export default function VideoDecryption() {
       const formData = new FormData();
       formData.append("video", videoFile);
 
-      // First try to extract border data
-      try {
-        const borderFormData = new FormData();
-        borderFormData.append("video", videoFile);
-
-        console.log("Attempting to extract border data...");
-        const borderResponse = await fetch(`${SERVER_URL}/extract-border`, {
-          method: "POST",
-          body: borderFormData,
-        });
-
-        if (borderResponse.ok) {
-          const borderData = await borderResponse.json();
-          console.log("Border data response:", borderData);
-
-          if (borderData.success) {
-            // Parse the border data to extract the actual message
-            const borderMessage = borderData.data;
-            console.log("Raw border message:", borderMessage);
-
-            if (borderMessage && borderMessage.startsWith("STEGO:")) {
-              const actualMessage = borderMessage.substring(6); // Remove "STEGO:" prefix
-              console.log("Extracted message:", actualMessage);
-
-              setDecryptedMessage(actualMessage);
-              setMetadata({
-                borderData: borderMessage,
-                contentHash: borderData.content_hash,
-                videoId: borderData.video_id,
-              });
-              toast.success("Message decrypted successfully from border data!");
-              return;
-            }
-          }
-        }
-      } catch (e) {
-        console.error("Error extracting border data:", e);
-      }
-
-      // If border extraction fails, try regular decryption
       console.log("Attempting regular decryption...");
       const response = await fetch(`${SERVER_URL}/decrypt`, {
         method: "POST",
@@ -117,8 +77,8 @@ export default function VideoDecryption() {
       const result = await response.json();
       console.log("Decryption response:", result);
 
-      if (result.text) {
-        setDecryptedMessage(result.text);
+      if (result.border_data) {
+        setDecryptedMessage(result.border_data);
         setError("");
         toast.success("Message decrypted successfully!");
       } else {
