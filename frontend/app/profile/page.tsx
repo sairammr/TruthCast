@@ -11,6 +11,7 @@ import Navigation from "@/components/navigation";
 import { evmAddress } from "@lens-protocol/client";
 import { fetchAccount, fetchPosts } from "@lens-protocol/client/actions";
 import { lensClient } from "@/lib/lens";
+import Header from "@/components/header";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -74,46 +75,8 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="flex flex-col h-full fixed inset-0 bg-[#f5f5f5] dark:bg-black max-w-[420px] mx-auto">
-      <header className="flex justify-center p-4 bg-[#f5f5f5] dark:bg-black border-b border-black dark:border-white safe-top">
-        <div className="w-full max-w-[420px] flex justify-between items-center">
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => router.push("/feed")}
-              className="brutalist-box bg-white dark:bg-black"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          </motion.div>
-          <h1 className="text-xl font-bold">
-            PRO<span className="text-[#004aad]">FILE</span>
-          </h1>
-          <div className="flex space-x-2">
-            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => router.push("/settings")}
-                className="brutalist-box bg-white dark:bg-black"
-              >
-                <Settings className="h-5 w-5" />
-              </Button>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleLogout}
-                className="brutalist-box bg-white dark:bg-black"
-              >
-                <LogOut className="h-5 w-5" />
-              </Button>
-            </motion.div>
-          </div>
-        </div>
-      </header>
+    <div className="flex flex-col h-full fixed inset-0 bg-[#f5f5f5] dark:bg-black max-w-[420px] mx-auto mt-[60px]">
+
 
       <main className="flex-1 overflow-y-auto overscroll-y-contain">
         <div className="container max-w-3xl mx-auto px-4 pb-20">
@@ -171,7 +134,7 @@ export default function ProfilePage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: 0.1 * index }}
                       className="cursor-pointer"
-                      onClick={() => setSelectedVideo(video.id)}
+                      onClick={() => router.push(`/post/${video.slug}`)}
                     >
                       <video
                         src={video.metadata?.video?.item}
@@ -200,38 +163,6 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      <Navigation />
-
-      {selectedVideo && (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-    onClick={() => setSelectedVideo(null)}
-  >
-    <motion.div
-      initial={{ scale: 0.9 }}
-      animate={{ scale: 1 }}
-      exit={{ scale: 0.9 }}
-      className="w-full max-w-3xl bg-black rounded-lg overflow-hidden"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {(() => {
-        const video = videos.find((v) => v.id === selectedVideo);
-        if (!video) return null;
-        return (
-          <video
-            src={video.metadata?.video?.item}
-            className="w-full aspect-video"
-            controls
-            autoPlay
-          />
-        );
-      })()}
-    </motion.div>
-  </motion.div>
-)}
     </div>
   );
 }

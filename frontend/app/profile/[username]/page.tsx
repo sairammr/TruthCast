@@ -12,6 +12,7 @@ import { fetchAccount, fetchPosts, fetchFollowers, fetchFollowing } from "@lens-
 import { evmAddress } from "@lens-protocol/client";
 import FollowButton from "@/components/follow-button";
 import AnimatedLogo from "@/components/animated-logo";
+import Header from "@/components/header";
 
 type AccountData = {
   address: string;
@@ -234,24 +235,9 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex justify-center bg-[#f5f5f5] dark:bg-black fixed inset-0">
+    <div className="flex justify-center bg-[#f5f5f5] dark:bg-black fixed inset-0 mt-[60px]">
       <div className="w-full max-w-[420px] h-full flex flex-col bg-[#ffffff] dark:bg-black">
-        <header
-          className="flex justify-center p-4 border-b safe-top backdrop-blur-lg bg-opacity-80 relative"
-          style={{ borderColor: `${"#004aad"}33` }}
-        >
-          <button onClick={() => router.back()} className="absolute left-4 top-1/2 -translate-y-1/2">
-            <ArrowLeftIcon className="w-6 h-6" />
-          </button>
-          
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <AnimatedLogo compact={true} />
-          </motion.div>
-        </header>
+
 
         <main className="flex-1 overflow-y-auto overscroll-y-contain touch-pan-y will-change-scroll">
           <motion.div
@@ -328,7 +314,7 @@ export default function ProfilePage() {
                          
                         >
                           <video
-                            onClick={() => router.push(`/post/${video.slug}`)}
+                            onClick={() => router.push(`/profile/${video.slug}`)}
                             src={video.metadata?.video?.item}
                             className="w-full aspect-video rounded brutalist-box"
                             controls={false}
@@ -349,37 +335,6 @@ export default function ProfilePage() {
         </main>
       </div>
 
-      {/* Video Modal */}
-      {selectedVideo && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedVideo(null)}
-        >
-          <motion.div
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0.9 }}
-            className="w-full max-w-3xl bg-black rounded-lg overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {(() => {
-              const video = videos.find((v) => v.id === selectedVideo);
-              if (!video) return null;
-              return (
-                <video
-                  src={video.metadata?.video?.item}
-                  className="w-full aspect-video"
-                  controls
-                  autoPlay
-                />
-              );
-            })()}
-          </motion.div>
-        </motion.div>
-      )}
 
       {/* Followers Modal */}
       {showFollowers && (

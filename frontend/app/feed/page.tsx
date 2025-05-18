@@ -10,6 +10,7 @@ import { fetchPosts } from "@lens-protocol/client/actions";
 import { evmAddress } from "@lens-protocol/client";
 import { lensClient } from "@/lib/lens";
 import { Post } from "@lens-protocol/client";
+import Header from "@/components/header";
 
 interface VideoMetadata {
   __typename: "VideoMetadata";
@@ -72,22 +73,8 @@ export default function FeedPage() {
   }, []);
 
   return (
-    <div className="flex justify-center bg-[#f5f5f5] dark:bg-black fixed inset-0">
-      {/* phone‐sized “screen” */}
+    <div className="flex justify-center bg-[#f5f5f5] dark:bg-black fixed inset-0 mt-[60px]">
       <div className="w-full max-w-[420px] h-full flex flex-col bg-[#ffffff] dark:bg-black">
-        <header
-          className="flex justify-center p-4 border-b safe-top backdrop-blur-lg bg-opacity-80"
-          style={{ borderColor: `${ACCENT}33` /* light 20% alpha */ }}
-        >
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <AnimatedLogo compact={true} />
-          </motion.div>
-        </header>
-
         <main className="flex-1 overflow-y-auto overscroll-y-contain touch-pan-y will-change-scroll">
           <motion.div
             className="w-full px-4 pb-20 pt-2"
@@ -109,7 +96,7 @@ export default function FeedPage() {
           </motion.div>
         </main>
 
-        <Navigation />
+        
       </div>
     </div>
   );

@@ -99,8 +99,7 @@ export default function VideoDecryption() {
   const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f5f5] dark:bg-black relative overflow-hidden">
-      {/* Background elements */}
+    <div className="flex flex-col min-h-screen bg-[#f5f5f5] dark:bg-black relative overflow-hidden mt-[-60px]">
       <motion.div
         className="absolute top-10 left-10 w-20 h-20 bg-[#10b981] rounded-full opacity-20"
         animate={{
@@ -127,26 +126,6 @@ export default function VideoDecryption() {
           ease: "easeInOut",
         }}
       />
-
-      {/* Header */}
-      <header className="flex justify-center p-4 bg-[#f5f5f5] dark:bg-black border-b border-black dark:border-white safe-top">
-        <div className="w-full max-w-3xl flex justify-between items-center">
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => router.push("/feed")}
-              className="brutalist-box bg-white dark:bg-black"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </motion.div>
-          <h1 className="text-xl font-bold">
-            DECRYPT <span className="text-[#10b981]">VIDEO</span>
-          </h1>
-          <div className="w-10" /> {/* Spacer for alignment */}
-        </div>
-      </header>
 
       {/* Main content */}
       <main className="flex-1 flex flex-col items-center justify-center p-4">
