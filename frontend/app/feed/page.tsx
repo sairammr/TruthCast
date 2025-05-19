@@ -11,6 +11,7 @@ import { evmAddress } from "@lens-protocol/client";
 import { lensClient } from "@/lib/lens";
 import { Post } from "@lens-protocol/client";
 import Header from "@/components/header";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface VideoMetadata {
   __typename: "VideoMetadata";
@@ -20,7 +21,16 @@ interface VideoMetadata {
   tags?: string[];
 }
 
-const ACCENT = "#004aad";  // ← your new primary color
+const ACCENT = "#004aad"; // ← your new primary color
+
+// Function to convert Lens URI to HTTP URL
+const getLensUrl = (uri: string) => {
+  if (!uri) return "";
+  if (uri.startsWith("lens://")) {
+    return `https://arweave.net/${uri.replace("lens://", "")}`;
+  }
+  return uri;
+};
 
 export default function FeedPage() {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -32,7 +42,7 @@ export default function FeedPage() {
           apps: [evmAddress(process.env.NEXT_PUBLIC_LENS_APP_ID || "")],
         },
       });
-      console.log('result', result);
+      console.log("result", result);
 
       if (result.isOk()) {
         const { items } = result.value;
@@ -44,7 +54,7 @@ export default function FeedPage() {
           )
           .map((post) => {
             const id = typeof post.id === "string" ? post.id : String(post.id);
-            console.log('FeedPage: post.id', post.id, '->', id, typeof id);
+            console.log("FeedPage: post.id", post.id, "->", id, typeof id);
             return {
               id,
               slug: post.slug,
@@ -95,8 +105,6 @@ export default function FeedPage() {
             ))}
           </motion.div>
         </main>
-
-        
       </div>
     </div>
   );

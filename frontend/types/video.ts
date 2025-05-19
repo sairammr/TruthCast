@@ -4,7 +4,14 @@ export interface Video {
   username: string;
   videoUrl: string;
   caption: string;
+  title: string;
+  tags: string[];
   likes: number;
   comments: number;
   authorId: string;
+  author: {
+    name: string;
+    bio: string;
+    picture: string;
+  };
 }
