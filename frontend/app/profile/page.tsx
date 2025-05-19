@@ -27,7 +27,7 @@ export default function ProfilePage() {
     if (address) {
       console.log(address);
       setAccountAddress(address);
-      
+
       // Fetch Lens profile details
       (async () => {
         try {
@@ -76,28 +76,76 @@ export default function ProfilePage() {
 
   return (
     <div className="flex flex-col h-full fixed inset-0 bg-[#f5f5f5] dark:bg-black max-w-[420px] mx-auto mt-[60px]">
-
-
       <main className="flex-1 overflow-y-auto overscroll-y-contain">
-        <div className="container max-w-3xl mx-auto px-4 pb-20">
+        <div className="container max-w-3xl mx-auto px-0 pb-20">
           <motion.div
-            className="py-6 flex flex-col items-center"
+            className="py-6 flex flex-col items-center bg-white dark:bg-black border border-black dark:border-white rounded-lg mb-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <Avatar className="w-20 h-20 border-2 border-black dark:border-white mb-4">
-              <AvatarImage src={lensProfile?.metadata?.picture || lensProfile?.metadata?.coverPicture || "/placeholder.svg?height=80&width=80"} />
+            <Avatar className="w-20 h-20 border border-black dark:border-white mb-3">
+              <AvatarImage
+                src={
+                  lensProfile?.metadata?.picture ||
+                  lensProfile?.metadata?.coverPicture ||
+                  "/placeholder.svg?height=80&width=80"
+                }
+              />
               <AvatarFallback>
-                {(lensProfile?.metadata?.name?.charAt(0) || accountAddress.slice(0, 2).toUpperCase() || "?")}
+                {lensProfile?.metadata?.name?.charAt(0) ||
+                  accountAddress.slice(0, 2).toUpperCase() ||
+                  "?"}
               </AvatarFallback>
             </Avatar>
-            <h2 className="text-xl font-bold">
-              {lensProfile?.metadata?.name || ensName || `${accountAddress.slice(0, 6)}...${accountAddress.slice(-4)}`}
+            <h2 className="text-xl font-bold text-black dark:text-white px-2 mb-1">
+              {lensProfile?.metadata?.name ||
+                ensName ||
+                `${accountAddress.slice(0, 6)}...${accountAddress.slice(-4)}`}
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-2 text-center font-mono">
+            <p className="text-gray-700 dark:text-gray-300 font-mono text-sm px-2 mb-1">
+              @{lensProfile?.username?.localName || accountAddress.slice(0, 8)}
+            </p>
+            <p className="text-black dark:text-white text-center font-mono px-2 py-1 bg-gray-100 dark:bg-neutral-800 rounded max-w-xs text-sm mb-2">
               {lensProfile?.metadata?.bio || "No bio available."}
             </p>
+            <div className="flex justify-center gap-6 mt-4 w-full">
+              <div className="text-center px-2 py-1 border border-black dark:border-white bg-white dark:bg-black rounded">
+                <div className="font-bold text-base text-black dark:text-white">
+                  {videos.length}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Posts
+                </div>
+              </div>
+              <div className="text-center px-2 py-1 border border-black dark:border-white bg-white dark:bg-black rounded">
+                <div className="font-bold text-base text-black dark:text-white">
+                  ?
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Followers
+                </div>
+              </div>
+              <div className="text-center px-2 py-1 border border-black dark:border-white bg-white dark:bg-black rounded">
+                <div className="font-bold text-base text-black dark:text-white">
+                  ?
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Following
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-4">
+              <Button
+                onClick={handleLogout}
+                className="border border-black dark:border-white bg-red-500 text-white font-bold px-4 py-1 rounded"
+              >
+                Logout
+              </Button>
+              <Button className="border border-black dark:border-white bg-gray-200 dark:bg-neutral-700 text-black dark:text-white font-bold px-4 py-1 rounded">
+                Settings
+              </Button>
+            </div>
           </motion.div>
 
           <motion.div
@@ -105,27 +153,29 @@ export default function ProfilePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Tabs defaultValue="videos" className="mt-6">
-              <TabsList className="w-full brutalist-box bg-white dark:bg-black">
+            <Tabs defaultValue="videos" className="mt-0">
+              <TabsList className="w-full border border-black dark:border-white rounded bg-white dark:bg-black">
                 <TabsTrigger
                   value="videos"
-                  className="flex-1 data-[state=active]:bg-[#004aad] data-[state=active]:text-white"
+                  className="flex-1 data-[state=active]:bg-[#004aad] data-[state=active]:text-white font-bold"
                 >
                   <Grid className="h-4 w-4 mr-2" />
                   Videos
                 </TabsTrigger>
                 <TabsTrigger
                   value="saved"
-                  className="flex-1 data-[state=active]:bg-[#004aad] data-[state=active]:text-white"
+                  className="flex-1 data-[state=active]:bg-[#004aad] data-[state=active]:text-white font-bold"
                 >
                   <BookMarked className="h-4 w-4 mr-2" />
                   Saved
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="videos" className="mt-4">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {videos.length === 0 && (
-                    <div className="col-span-full text-center text-gray-500">No videos found.</div>
+                    <div className="col-span-full text-center text-gray-500">
+                      No videos found.
+                    </div>
                   )}
                   {videos.map((video, index) => (
                     <motion.div
@@ -133,28 +183,31 @@ export default function ProfilePage() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: 0.1 * index }}
-                      className="cursor-pointer"
+                      className="cursor-pointer border border-black dark:border-white bg-white dark:bg-black hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors rounded"
                       onClick={() => router.push(`/post/${video.slug}`)}
                     >
                       <video
                         src={video.metadata?.video?.item}
-                        className="w-full aspect-video rounded brutalist-box"
+                        className="w-full aspect-video rounded-t border-b border-black dark:border-white"
                         controls={false}
                         poster={video.metadata?.coverPicture || undefined}
                       />
-                      <div className="mt-2 text-sm font-semibold">{video.metadata?.title || "Untitled Video"}</div>
+                      <div className="mt-1 text-xs font-bold text-black dark:text-white px-2 py-1 truncate">
+                        {video.metadata?.title || "Untitled Video"}
+                      </div>
                     </motion.div>
                   ))}
                 </div>
               </TabsContent>
               <TabsContent value="saved" className="mt-4">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <Button
                     onClick={() => {
                       router.push("/upload");
                     }}
+                    className="border border-black dark:border-white bg-[#004aad] text-white font-bold px-3 py-1 rounded"
                   >
-                    trasnaction
+                    Upload
                   </Button>
                 </div>
               </TabsContent>
@@ -162,7 +215,6 @@ export default function ProfilePage() {
           </motion.div>
         </div>
       </main>
-
     </div>
   );
 }
