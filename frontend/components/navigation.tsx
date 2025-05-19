@@ -1,5 +1,5 @@
 "use client"
-import { Home, Plus, User, Unlock } from "lucide-react";
+import { Home, Plus, User, Unlock, Search } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
@@ -25,6 +25,18 @@ export default function Navigation() {
           >
             <Home className="h-6 w-6" />
             <span className="text-xs mt-1">Feed</span>
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => handleNavigation("/sandbox")}
+            className={`flex flex-col items-center justify-center ${
+              pathname === "/sandbox" ? "text-[#004aad]" : "text-gray-500"
+            }`}
+          >
+            <Search className="h-6 w-6" />
+            <span className="text-xs mt-1">Sandbox</span>
           </motion.button>
 
           <motion.button
