@@ -29,12 +29,20 @@ export default function AnimatedLogo({
     };
   }, []);
 
-  const textSize = compact ? "text-3xl" : "text-4xl sm:text-5xl";
+  const textSize = compact
+    ? "text-lg sm:text-xl leading-tight"
+    : "text-4xl sm:text-5xl";
+  const fontWeight = "font-bold";
+  const containerClass = compact ? "py-0 my-0" : "";
 
   return (
-    <div className={`relative ${className}`}>
+    <div
+      className={`relative ${containerClass} ${className}`}
+      style={compact ? { minWidth: 100 } : {}}
+    >
       <h1
-        className={`${textSize} font-bold tracking-tight text-black dark:text-white`}
+        className={`${textSize} ${fontWeight} tracking-tight text-black dark:text-white`}
+        style={compact ? { lineHeight: 1.1, letterSpacing: 0 } : {}}
       >
         <span className="relative">
           <motion.span
@@ -46,7 +54,7 @@ export default function AnimatedLogo({
             Fake
             {animationComplete && (
               <motion.div
-                className="absolute left-0 top-1/2 w-0 h-[3px] bg-[#10b981]"
+                className="absolute left-0 top-1/2 w-0 h-[2px] bg-[#10b981]"
                 initial={{ width: 0 }}
                 animate={{ width: "100%" }}
                 transition={{ duration: 0.5, ease: "easeInOut" }}
@@ -62,7 +70,7 @@ export default function AnimatedLogo({
             Truth
           </motion.span>
         </span>
-        {" Cast"}
+        {compact ? <span className="ml-1">Cast</span> : " Cast"}
       </h1>
     </div>
   );

@@ -6,10 +6,13 @@ import { Settings, LogOut, ArrowLeft } from "lucide-react";
 import { signOut } from "next-auth/react";
 import AnimatedLogo from "./animated-logo";
 import { lensClient } from "@/lib/lens";
+import { useTheme } from "next-themes";
+import { Sun, Moon } from "lucide-react";
 
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
 
   const handleLogout = async () => {
     const resumed = await lensClient.resumeSession();
@@ -25,15 +28,15 @@ export default function Header() {
   const getTitle = () => {
     // Remove leading slash and split by remaining slashes
     const path = pathname.slice(1).split("/");
-    
+
     // Handle root path
     if (pathname === "/") return "TruthCast";
-    
+
     // Handle profile path with username
     if (path[0] === "profile" && path[1]) {
       return `@${path[1]}`;
     }
-    
+
     // Handle post path with ID
     if (path[0] === "post" && path[1]) {
       return "Post";
@@ -57,35 +60,37 @@ export default function Header() {
   };
 
   const showBackButton = () => {
-    return pathname !== "/" && 
-           pathname !== "/feed" && 
-           pathname !== "/create" && 
-           pathname !== "/decrypt" && 
-           pathname !== "/profile" && 
-           pathname !== "/settings";
+    return (
+      pathname !== "/" &&
+      pathname !== "/feed" &&
+      pathname !== "/create" &&
+      pathname !== "/decrypt" &&
+      pathname !== "/profile" &&
+      pathname !== "/settings"
+    );
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center items-center max-w-[420px] mx-auto p-4 bg-[#f5f5f5] dark:bg-black border-b border-black dark:border-white safe-top">
-      <div className="w-full max-w-[420px] flex justify-center items-center relative">
-        {showBackButton() ? (
-          <button
-            onClick={() => router.back()}
-            className="absolute left-0 top-1/2 -translate-y-1/2 hover:opacity-80 transition-opacity"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-        ) : (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2">
+    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center items-center max-w-[420px] mx-auto px-4 py-3 bg-[#f5f5f5] dark:bg-black border-b border-black dark:border-white safe-top shadow-sm">
+      <div className="w-full max-w-[420px] flex justify-between items-center relative">
+        <div className="flex items-center gap-2">
+          {showBackButton() ? (
+            <button
+              onClick={() => router.back()}
+              className="hover:opacity-80 transition-opacity"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+          ) : (
             <AnimatedLogo compact={true} />
-          </div>
-        )}
+          )}
+        </div>
 
-        <h1 className="text-xl font-bold">
+        <h1 className="text-xl font-extrabold text-center flex-1 truncate">
           {getTitle()}
         </h1>
 
-        <div className="flex space-x-2 absolute right-0">
+        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
@@ -106,4 +111,4 @@ export default function Header() {
       </div>
     </header>
   );
-} 
+}
