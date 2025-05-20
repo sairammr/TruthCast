@@ -12,15 +12,35 @@ import { signMessageWith } from "@lens-protocol/client/viem";
 import { toast } from "sonner";
 import { evmAddress } from "@lens-protocol/client";
 import { fetchAccount, fetchAccountsBulk } from "@lens-protocol/client/actions";
-
-
-
+import Image from "next/image";
 
 export default function OnboardingPage() {
   const router = useRouter();
   const { address, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const lensAccountAddress = localStorage.getItem("lensAccountAddress");
+    if (lensAccountAddress) {
+      // Fetch username
+      const fetchUsername = async () => {
+        try {
+          const result = await fetchAccount(lensClient, {
+            address: evmAddress(lensAccountAddress),
+          });
+          if (result.isOk()) {
+            setUsername(result.value.username?.localName || null);
+          }
+        } catch (error) {
+          console.error("Error fetching username:", error);
+        }
+      };
+      fetchUsername();
+    }
+  }, []);
 
   function getCircularReplacer() {
     const seen = new WeakSet();
@@ -32,78 +52,86 @@ export default function OnboardingPage() {
       return value;
     };
   }
-  // Automatically authenticate with Lens when wallet is connected
 
-    const authenticateWithLens = async () => {
-      if (isConnected && address && walletClient && !isAuthenticating) {
-        try {
-          setIsAuthenticating(true);
-          //check for owner of this wallet address
-          try{
+  const authenticateWithLens = async () => {
+    if (!isConnected || !address) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
 
-            // this logic is not implemented have confusions in the implementation
-            const result = await fetchAccountsBulk(lensClient, {
-              ownedBy: [evmAddress(address)],
-            });
+    if (!walletClient) {
+      toast.error("Wallet client not available");
+      return;
+    }
 
-            
-            console.log("result", result);
-            if (result.isOk() && result.value.length === 0){
-              router.push("/register");
-              return;
-            }
-            
-          const authenticated = await lensClient.login({
-            accountOwner: {
-              app: process.env.NEXT_PUBLIC_LENS_APP_ID, // App ID
-              owner: evmAddress(address),
-              account: result.isOk() ? result.value[0].address : "",
-            },
-            signMessage: signMessageWith(walletClient),
-          })
-          const sessionClient = authenticated.isOk() ? authenticated.value : null;
-          console.log("Lens authentication successful", { sessionClient });
-          localStorage.setItem("lensAccountAddress", result.isOk() ? result.value[0].address : "");
-          console.log("session client", sessionClient);
-          console.log("sessionClient keys:", sessionClient ? Object.keys(sessionClient) : "No session client");
+    if (isAuthenticating) return;
 
-          // Helper to handle circular references
+    try {
+      setIsAuthenticating(true);
+      try {
+        const result = await fetchAccountsBulk(lensClient, {
+          ownedBy: [evmAddress(address)],
+        });
 
-
-          try {
-            localStorage.setItem("sessionClient", JSON.stringify(sessionClient, getCircularReplacer()));
-          } catch (e) {
-            console.error("sessionClient not serializable", e);
-            toast.error("Session could not be saved (not serializable)");
-          }
-          toast.success("Connected to Lens Protocol");
-
-          router.push("/feed");
-          ;}
-          catch(error){
-            console.error("Error authenticating with Lens:", error);
-            toast.error("Failed to connect to Lens Protocol");
-           // router.push("/register");
-            setIsAuthenticating(false);
-            return;
-          }
-        
-        } catch (error) {
-          console.error("Error authenticating with Lens:", error);
-          toast.error("Failed to connect to Lens Protocol");
-        } finally {
-          setIsAuthenticating(false);
+        console.log("result", result);
+        if (result.isOk() && result.value.length === 0) {
+          router.push("/register");
+          return;
         }
-      }
-    };
 
+        const authenticated = await lensClient.login({
+          accountOwner: {
+            app: process.env.NEXT_PUBLIC_LENS_APP_ID,
+            owner: evmAddress(address),
+            account: result.isOk() ? result.value[0].address : "",
+          },
+          signMessage: signMessageWith(walletClient),
+        });
+
+        const sessionClient = authenticated.isOk() ? authenticated.value : null;
+        console.log("Lens authentication successful", { sessionClient });
+        localStorage.setItem(
+          "lensAccountAddress",
+          result.isOk() ? result.value[0].address : ""
+        );
+        console.log("session client", sessionClient);
+        console.log(
+          "sessionClient keys:",
+          sessionClient ? Object.keys(sessionClient) : "No session client"
+        );
+
+        try {
+          localStorage.setItem(
+            "sessionClient",
+            JSON.stringify(sessionClient, getCircularReplacer())
+          );
+        } catch (e) {
+          console.error("sessionClient not serializable", e);
+          toast.error("Session could not be saved (not serializable)");
+        }
+        toast.success("Connected to Lens Protocol");
+
+        router.push("/feed");
+      } catch (error) {
+        console.error("Error authenticating with Lens:", error);
+        toast.error("Failed to connect to Lens Protocol");
+        setIsAuthenticating(false);
+        return;
+      }
+    } catch (error) {
+      console.error("Error authenticating with Lens:", error);
+      toast.error("Failed to connect to Lens Protocol");
+    } finally {
+      setIsAuthenticating(false);
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-[#f5f5f5] dark:bg-black relative overflow-hidden">
       {/* Background elements */}
-<div className="absolute top-5 right-5">
-    <ConnectKitButton theme="retro" />
-</div>
+      <div className="absolute top-5 right-5">
+        <ConnectKitButton theme="retro" />
+      </div>
       <motion.div
         className="absolute top-10 left-10 w-20 h-20 bg-[#004aad] rounded-full opacity-20"
         animate={{
@@ -147,7 +175,7 @@ export default function OnboardingPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="w-full max-w-md text-center space-y-8 z-10 opacity-10"
+        className="w-full max-w-md text-center space-y-8 z-10"
       >
         <motion.div
           initial={{ scale: 0.9 }}
@@ -180,32 +208,29 @@ export default function OnboardingPage() {
           className="space-y-4 pt-8"
         >
           <Button
-              onClick={() => {
-                authenticateWithLens();
-              }}
-              className="w-[350px] py-6 text-lg brutalist-button hover:scale-105 transition-all duration-300"
-            >
-              Launch Dapp
-            </Button>
-         
-        </motion.div>
-        {/* <motion.div
-          className="fixed bottom-4 right-4 z-50"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Button
-            variant="outline"
-            size="sm"
-            className="brutalist-box bg-white dark:bg-black text-xs"
-            onClick={() => {
-              localStorage.setItem("offchainMode", "true");
-              router.push("/profile");
-            }}
+            onClick={authenticateWithLens}
+            className="w-[350px] py-6 text-lg brutalist-button hover:scale-105 transition-all duration-300"
+            disabled={!isConnected}
           >
-            Offchain Mode
+            {username ? `Continue as @${username}` : "Login with Lens"}
           </Button>
-        </motion.div> */}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
+          className="flex items-center justify-center gap-2 mt-8"
+        >
+          <span className="text-sm text-gray-500">Powered by</span>
+          <Image
+            src="/lens.png"
+            alt="Lens Protocol"
+            width={24}
+            height={24}
+            className="opacity-80"
+          />
+        </motion.div>
       </motion.div>
     </div>
   );
