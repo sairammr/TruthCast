@@ -274,11 +274,10 @@ export default function VideoCard({ video }: VideoCardProps) {
         <div className="relative w-full aspect-video bg-black overflow-hidden brutalist-box">
           <video
             src={video.videoUrl}
-            poster="/placeholder.svg?height=720&width=1280"
             controls
             playsInline
             preload="metadata"
-            className="absolute inset-0 w-full h-full object-cover rounded-none"
+            className="absolute inset-0 w-full h-full object-contain"
           />
         </div>
       </CardContent>

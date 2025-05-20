@@ -1,5 +1,5 @@
 "use client";
-import { Home, Plus, User, Unlock, Search } from "lucide-react";
+import { Home, Plus, User, Unlock, TestTube } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
@@ -47,7 +47,7 @@ export default function Navigation() {
               }
             `}
           >
-            <Search
+            <TestTube
               className={`h-7 w-7 mb-1 ${
                 pathname === "/sandbox" ? "text-[#004aad]" : ""
               }`}

@@ -62,7 +62,7 @@ export default function AnimatedLogo({
             )}
           </motion.span>
           <motion.span
-            className="absolute left-0 text-[#10b981]"
+            className="absolute -left-2 text-[#10b981] mr-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: showTruth ? 1 : 0 }}
             transition={{ duration: 0.3 }}
@@ -70,7 +70,7 @@ export default function AnimatedLogo({
             Truth
           </motion.span>
         </span>
-        {compact ? <span className="ml-1">Cast</span> : " Cast"}
+        {compact ? <span className="">Cast</span> : " Cast"}
       </h1>
     </div>
   );
