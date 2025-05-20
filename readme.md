@@ -53,7 +53,7 @@ A Lens Client Social media that uses steganography to provide AI proof content
 
 5. Start the steganography server:
    ```bash
-   python app.py
+   python server.py
    ```
    Copy the server url from the console
 
