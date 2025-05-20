@@ -3,13 +3,18 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Grid, BookMarked, ArrowLeft, LogOut, Settings } from "lucide-react";
+import { Grid, BookMarked, ArrowLeft, LogOut, Settings, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navigation from "@/components/navigation";
 import { evmAddress } from "@lens-protocol/client";
-import { fetchAccount, fetchPosts } from "@lens-protocol/client/actions";
+import {
+  fetchAccount,
+  fetchPosts,
+  fetchFollowers,
+  fetchFollowing,
+} from "@lens-protocol/client/actions";
 import { lensClient } from "@/lib/lens";
 import Header from "@/components/header";
 
@@ -20,6 +25,10 @@ export default function ProfilePage() {
   const [accountAddress, setAccountAddress] = useState<string>("");
   const [ensName, setEnsName] = useState<string>("");
   const [lensProfile, setLensProfile] = useState<any>(null);
+  const [followers, setFollowers] = useState<any[]>([]);
+  const [following, setFollowing] = useState<any[]>([]);
+  const [showFollowers, setShowFollowers] = useState(false);
+  const [showFollowing, setShowFollowing] = useState(false);
 
   useEffect(() => {
     // Get account address from localStorage
@@ -39,6 +48,22 @@ export default function ProfilePage() {
           } else {
             console.log("Lens profile/account:", result.value);
             setLensProfile(result.value);
+
+            // Fetch followers
+            const followersResult = await fetchFollowers(lensClient, {
+              account: evmAddress(address),
+            });
+            if (followersResult.isOk()) {
+              setFollowers([...followersResult.value.items]);
+            }
+
+            // Fetch following
+            const followingResult = await fetchFollowing(lensClient, {
+              account: evmAddress(address),
+            });
+            if (followingResult.isOk()) {
+              setFollowing([...followingResult.value.items]);
+            }
           }
         } catch (err) {
           console.error("Error fetching Lens profile/account:", err);
@@ -118,17 +143,23 @@ export default function ProfilePage() {
                   Posts
                 </div>
               </div>
-              <div className="text-center px-2 py-1 border border-black dark:border-white bg-white dark:bg-black rounded">
+              <div
+                className="text-center px-2 py-1 border border-black dark:border-white bg-white dark:bg-black rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-800"
+                onClick={() => setShowFollowers(true)}
+              >
                 <div className="font-bold text-base text-black dark:text-white">
-                  ?
+                  {followers.length}
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   Followers
                 </div>
               </div>
-              <div className="text-center px-2 py-1 border border-black dark:border-white bg-white dark:bg-black rounded">
+              <div
+                className="text-center px-2 py-1 border border-black dark:border-white bg-white dark:bg-black rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-800"
+                onClick={() => setShowFollowing(true)}
+              >
                 <div className="font-bold text-base text-black dark:text-white">
-                  ?
+                  {following.length}
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   Following
@@ -147,6 +178,100 @@ export default function ProfilePage() {
               </Button>
             </div>
           </motion.div>
+
+          {/* Followers Modal */}
+          {showFollowers && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <div className="bg-white dark:bg-black border border-black dark:border-white rounded-lg p-4 w-full max-w-sm mx-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-bold">Followers</h3>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowFollowers(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  {followers.map((follower) => (
+                    <div
+                      key={follower.follower.address}
+                      className="flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded"
+                    >
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage
+                          src={follower.follower.metadata?.picture}
+                        />
+                        <AvatarFallback>
+                          {follower.follower.metadata?.name?.charAt(0) ||
+                            follower.follower.address.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-bold">
+                          {follower.follower.metadata?.name ||
+                            `${follower.follower.address.slice(
+                              0,
+                              6
+                            )}...${follower.follower.address.slice(-4)}`}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          @{follower.follower.username?.localName}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Following Modal */}
+          {showFollowing && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <div className="bg-white dark:bg-black border border-black dark:border-white rounded-lg p-4 w-full max-w-sm mx-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-bold">Following</h3>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowFollowing(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  {following.map((follow) => (
+                    <div
+                      key={follow.following.address}
+                      className="flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded"
+                    >
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage src={follow.following.metadata?.picture} />
+                        <AvatarFallback>
+                          {follow.following.metadata?.name?.charAt(0) ||
+                            follow.following.address.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-bold">
+                          {follow.following.metadata?.name ||
+                            `${follow.following.address.slice(
+                              0,
+                              6
+                            )}...${follow.following.address.slice(-4)}`}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          @{follow.following.username?.localName}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
