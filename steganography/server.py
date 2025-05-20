@@ -977,23 +977,23 @@ def decrypt_endpoint():
         if os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)
 
-if __name__ == '__main__':
-    # Make sure keys are generated on startup
-    generate_keys()
+# if __name__ == '__main__':
+#     # Make sure keys are generated on startup
+#     generate_keys()
     
-    # Try different ports if the default is in use
-    port = 5000
-    max_port_attempts = 10
+#     # Try different ports if the default is in use
+#     port = 5000
+#     max_port_attempts = 10
     
-    for attempt in range(max_port_attempts):
-        try:
-            print(f"Attempting to start server on port {port}")
-            app.run(debug=True, host='0.0.0.0', port=port)
-            break
-        except OSError as e:
-            if "Address already in use" in str(e) and attempt < max_port_attempts - 1:
-                port += 1
-                print(f"Port {port-1} is in use, trying port {port}")
-            else:
-                print(f"Could not start server: {e}")
-                raise
+#     for attempt in range(max_port_attempts):
+#         try:
+#             print(f"Attempting to start server on port {port}")
+#             app.run(debug=True, host='0.0.0.0', port=port)
+#             break
+#         except OSError as e:
+#             if "Address already in use" in str(e) and attempt < max_port_attempts - 1:
+#                 port += 1
+#                 print(f"Port {port-1} is in use, trying port {port}")
+#             else:
+#                 print(f"Could not start server: {e}")
+#                 raise
