@@ -33,6 +33,7 @@ export default function CreatePage() {
   const [description, setDescription] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
+  const [isRecordingComplete, setIsRecordingComplete] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -96,29 +97,54 @@ export default function CreatePage() {
     }
   }, [stream, videoRef.current]);
 
+  // Effect to handle preview creation when recording is complete
+  useEffect(() => {
+    if (isRecordingComplete && recordedChunks.length > 0) {
+      const blob = new Blob(recordedChunks, { type: 'video/mp4' });
+      const url = URL.createObjectURL(blob);
+      setPreviewUrl(url);
+      setIsRecordingComplete(false);
+    }
+  }, [isRecordingComplete, recordedChunks]);
+
   const startRecording = () => {
     if (!stream) return;
 
-    const mediaRecorder = new MediaRecorder(stream);
+    const mediaRecorder = new MediaRecorder(stream, {
+      mimeType: 'video/mp4'
+    });
     mediaRecorderRef.current = mediaRecorder;
     setRecordedChunks([]);
+    setIsRecordingComplete(false);
 
     mediaRecorder.ondataavailable = (e) => {
-      if (e.data.size > 0) setRecordedChunks((prev) => [...prev, e.data]);
+      if (e.data.size > 0) {
+        setRecordedChunks((prev) => [...prev, e.data]);
+      }
     };
 
-    mediaRecorder.start();
+    mediaRecorder.start(1000); // Collect data every second
     setIsRecording(true);
   };
 
   const stopRecording = () => {
-    mediaRecorderRef.current?.stop();
+    if (!mediaRecorderRef.current) return;
+    
+    mediaRecorderRef.current.stop();
     setIsRecording(false);
     stopCamera();
-
-    const blob = new Blob(recordedChunks, { type: "video/mp4" });
-    setPreviewUrl(URL.createObjectURL(blob));
+    setIsRecordingComplete(true);
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   // Wait for SecretCreated event using Promise
   const waitForSecretCreatedEvent = (timeoutMs = 30000): Promise<string> => {
