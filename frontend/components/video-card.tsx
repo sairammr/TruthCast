@@ -280,6 +280,8 @@ export default function VideoCard({ video }: VideoCardProps) {
             className="absolute inset-0 w-full h-full object-contain"
           />
         </div>
+
+
       </CardContent>
       {video.caption && (
         <div className="mt-3 px-5">
@@ -338,6 +340,36 @@ export default function VideoCard({ video }: VideoCardProps) {
             <span className="ml-2 text-black dark:text-white font-bold align-middle">
               {video.comments}
             </span>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded brutalist-box p-2 border-2 border-black dark:border-white bg-white dark:bg-black"
+              asChild
+              aria-label="Download"
+            >
+              <a
+                href={`/api/download-video?url=${encodeURIComponent(video.videoUrl)}`}
+                className="rounded brutalist-box p-2 border-2 border-black dark:border-white bg-white dark:bg-black inline-flex items-center justify-center"
+                aria-label="Download"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 text-black dark:text-white"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"
+                  />
+                </svg>
+              </a>
+
+            </Button>
           </motion.div>
         </div>
         <motion.div
