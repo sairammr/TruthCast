@@ -35,7 +35,6 @@ export default function RegisterPage() {
     bio: "",
     picture: "",
     coverPicture: "",
-    twitter: "",
     tags: [] as string[],
   });
   const [uploading, setUploading] = useState({
@@ -134,13 +133,6 @@ export default function RegisterPage() {
         bio: formData.bio,
         picture: formData.picture,
         coverPicture: formData.coverPicture,
-        attributes: [
-          {
-            key: "twitter",
-            type: MetadataAttributeType.STRING,
-            value: formData.twitter,
-          },
-        ],
       });
 
       // Step 3: Upload Metadata
@@ -356,6 +348,57 @@ export default function RegisterPage() {
               </form>
             </div>
           </div>
+    <div className="flex flex-col h-full fixed inset-0 bg-[#f2f2f2]">
+      <div className="w-full max-w-[420px] mx-auto h-full bg-white shadow-xl overflow-hidden">
+        <div className="container px-4 py-10">
+          <h1 className="text-3xl font-bold mb-8">Create Your Lens Account</h1>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium mb-2">Name</label>
+              <input
+                type="text"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full p-2 border-2 border-black rounded brutalist-input"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Bio</label>
+              <textarea
+                required
+                value={formData.bio}
+                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                className="w-full p-2 border-2 border-black rounded brutalist-input"
+                rows={3}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Profile Picture URL</label>
+              <input
+                type="url"
+                value={formData.picture}
+                onChange={(e) => setFormData({ ...formData, picture: e.target.value })}
+                className="w-full p-2 border-2 border-black rounded brutalist-input"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Cover Picture URL</label>
+              <input
+                type="url"
+                value={formData.coverPicture}
+                onChange={(e) => setFormData({ ...formData, coverPicture: e.target.value })}
+                className="w-full p-2 border-2 border-black rounded brutalist-input"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-[#004aad] text-white py-3 px-4 rounded brutalist-button"
+            >
+              {isLoading ? "Creating Account..." : "Create Account"}
+            </button>
+          </form>
         </div>
       </div>
     </div>

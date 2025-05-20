@@ -38,6 +38,7 @@ export default function FeedPage() {
   const [hasMore, setHasMore] = useState(true);
   const [cursor, setCursor] = useState<string | null>(null);
   const loaderRef = useRef<HTMLDivElement | null>(null);
+  const initialFetchDone = useRef(false);
 
   // Fetch posts with pagination
   const fetchMorePosts = useCallback(async () => {
@@ -92,16 +93,21 @@ export default function FeedPage() {
 
   // Initial load
   useEffect(() => {
-    setVideos([]);
-    setCursor(null);
-    setHasMore(true);
-    fetchMorePosts();
-    // eslint-disable-next-line
+    const initialFetch = async () => {
+      if (initialFetchDone.current) return;
+      initialFetchDone.current = true;
+      
+      setVideos([]);
+      setCursor(null);
+      setHasMore(true);
+      await fetchMorePosts();
+    };
+    initialFetch();
   }, []);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
-    if (!hasMore || loading) return;
+    if (!hasMore || loading || !initialFetchDone.current) return;
     const observer = new window.IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {

@@ -328,7 +328,7 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <Button
                     onClick={() => {
-                      router.push("/upload");
+                      
                     }}
                     className="border border-black dark:border-white bg-[#004aad] text-white font-bold px-3 py-1 rounded"
                   >
