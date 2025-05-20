@@ -8,6 +8,7 @@ import AnimatedLogo from "./animated-logo";
 import { lensClient } from "@/lib/lens";
 import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
+import { toast } from "sonner";
 
 export default function Header() {
   const pathname = usePathname();
@@ -15,13 +16,35 @@ export default function Header() {
   const { theme, setTheme } = useTheme();
 
   const handleLogout = async () => {
-    const resumed = await lensClient.resumeSession();
-    if (resumed.isOk()) {
-      const result = await resumed.value.logout();
-      console.log(result);
+    try {
+      // Try to resume session first
+      const resumed = await lensClient.resumeSession();
+
+      if (resumed.isOk()) {
+        // If we have a valid session, logout properly
+        const result = await resumed.value.logout();
+        if (result.isOk()) {
+          // Clear any local storage items
+          localStorage.removeItem("lensSession");
+          localStorage.removeItem("lensAccountAddress");
+          toast.success("Logged out successfully");
+          router.push("/");
+        } else {
+          toast.error("Failed to logout");
+        }
+      } else {
+        // If no valid session, just clear storage and redirect
+        localStorage.removeItem("lensSession");
+        localStorage.removeItem("lensAccountAddress");
+        toast.success("Logged out successfully");
+        router.push("/");
+      }
+    } catch (error) {
+      // If any error occurs, clear storage and redirect
+      localStorage.removeItem("lensSession");
+      localStorage.removeItem("lensAccountAddress");
+      toast.success("Logged out successfully");
       router.push("/");
-    } else {
-      console.log(resumed.error);
     }
   };
 
