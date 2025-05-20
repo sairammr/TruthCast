@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Video, Check, X, Loader, Lock, Unlock } from "lucide-react";
+import { Video, Check, X, Loader, Lock, Unlock, Camera } from "lucide-react";
 import { motion } from "framer-motion";
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
@@ -11,29 +11,70 @@ const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
 export default function SandboxPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [encryptedVideoUrl, setEncryptedVideoUrl] = useState<string | null>(null);
+  const [encryptedVideoUrl, setEncryptedVideoUrl] = useState<string | null>(
+    null
+  );
   const [secretMessage, setSecretMessage] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [isCameraOn, setIsCameraOn] = useState(false);
   const [decryptedMessage, setDecryptedMessage] = useState<string>("");
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
-  // Setup camera on mount
-  useEffect(() => {
-    const startCamera = async () => {
-      try {
-        const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
-        setStream(mediaStream);
-        if (videoRef.current) videoRef.current.srcObject = mediaStream;
-      } catch (error) {
-        toast.error("Camera access required for recording");
-      }
-    };
+  const startCamera = async () => {
+    try {
+      console.log("Requesting camera access...");
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: "user",
+        },
+      });
+      console.log("Camera access granted:", mediaStream);
+      setStream(mediaStream);
+      setIsCameraOn(true);
+    } catch (error) {
+      console.error("Camera access error:", error);
+      toast.error("Camera access required for recording");
+    }
+  };
 
-    startCamera();
-    return () => stream?.getTracks().forEach((track) => track.stop());
+  // Handle video stream when stream or videoRef changes
+  useEffect(() => {
+    if (stream && videoRef.current) {
+      console.log("Setting up video stream...");
+      videoRef.current.srcObject = stream;
+      videoRef.current.onloadedmetadata = () => {
+        console.log("Video metadata loaded");
+        videoRef.current?.play().catch((error) => {
+          console.error("Error playing video:", error);
+        });
+      };
+    }
+  }, [stream, videoRef.current]);
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach((track) => {
+        track.stop();
+        track.enabled = false;
+      });
+      setStream(null);
+      setIsCameraOn(false);
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
   }, []);
 
   const startRecording = () => {
@@ -54,6 +95,7 @@ export default function SandboxPage() {
   const stopRecording = () => {
     mediaRecorderRef.current?.stop();
     setIsRecording(false);
+    stopCamera();
 
     const blob = new Blob(recordedChunks, { type: "video/mp4" });
     setPreviewUrl(URL.createObjectURL(blob));
@@ -102,7 +144,7 @@ export default function SandboxPage() {
     try {
       const response = await fetch(encryptedVideoUrl);
       const videoBlob = await response.blob();
-      
+
       const formData = new FormData();
       formData.append("video", videoBlob);
 
@@ -126,6 +168,7 @@ export default function SandboxPage() {
   };
 
   const resetDemo = () => {
+    stopCamera();
     setPreviewUrl(null);
     setEncryptedVideoUrl(null);
     setSecretMessage("");
@@ -190,25 +233,48 @@ export default function SandboxPage() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  muted
-                  className="w-full h-full object-cover"
-                />
+                <>
+                  {isCameraOn ? (
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-cover"
+                      style={{ transform: "scaleX(-1)" }} // Mirror the video
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      Camera is off
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
             {/* Recording Controls */}
             {!previewUrl && (
-              <Button
-                onClick={isRecording ? stopRecording : startRecording}
-                className="w-full py-6 text-lg mb-4"
-                variant={isRecording ? "destructive" : "default"}
-              >
-                <Video className="mr-2" />
-                {isRecording ? "Stop Recording" : "Start Recording"}
-              </Button>
+              <div className="space-y-4">
+                {!isCameraOn ? (
+                  <Button
+                    onClick={startCamera}
+                    className="w-full py-6 text-lg"
+                    variant="default"
+                  >
+                    <Camera className="mr-2" />
+                    Start Camera
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={isRecording ? stopRecording : startRecording}
+                    className="w-full py-6 text-lg"
+                    variant={isRecording ? "destructive" : "default"}
+                  >
+                    <Video className="mr-2" />
+                    {isRecording ? "Stop Recording" : "Start Recording"}
+                  </Button>
+                )}
+              </div>
             )}
 
             {/* Secret Message Input */}
@@ -221,10 +287,18 @@ export default function SandboxPage() {
                   className="w-full p-2 border rounded h-24"
                 />
                 <div className="flex gap-2">
-                  <Button onClick={() => setPreviewUrl(null)} variant="outline" className="flex-1">
+                  <Button
+                    onClick={() => setPreviewUrl(null)}
+                    variant="outline"
+                    className="flex-1"
+                  >
                     <X className="mr-2" /> Retake
                   </Button>
-                  <Button onClick={handleEncrypt} disabled={isProcessing} className="flex-1">
+                  <Button
+                    onClick={handleEncrypt}
+                    disabled={isProcessing}
+                    className="flex-1"
+                  >
                     {isProcessing ? (
                       <Loader className="animate-spin mr-2" />
                     ) : (
@@ -246,10 +320,18 @@ export default function SandboxPage() {
                   className="w-full aspect-video rounded-lg"
                 />
                 <div className="flex gap-2">
-                  <Button onClick={resetDemo} variant="outline" className="flex-1">
+                  <Button
+                    onClick={resetDemo}
+                    variant="outline"
+                    className="flex-1"
+                  >
                     <X className="mr-2" /> Reset Demo
                   </Button>
-                  <Button onClick={handleDecrypt} disabled={isProcessing} className="flex-1">
+                  <Button
+                    onClick={handleDecrypt}
+                    disabled={isProcessing}
+                    className="flex-1"
+                  >
                     {isProcessing ? (
                       <Loader className="animate-spin mr-2" />
                     ) : (
@@ -269,7 +351,9 @@ export default function SandboxPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <h2 className="text-xl font-semibold mb-4">Decrypted Message</h2>
+                <h2 className="text-xl font-semibold mb-4">
+                  Decrypted Message
+                </h2>
                 <motion.div
                   className="p-6 bg-[#10b981]/10 rounded-lg border-2 border-[#10b981] text-gray-800 dark:text-gray-200"
                   initial={{ scale: 0.95 }}
@@ -318,4 +402,4 @@ const base64ToBlob = (base64: string, type: string) => {
     byteArrays.push(new Uint8Array(byteNumbers));
   }
   return new Blob(byteArrays, { type });
-}; 
+};

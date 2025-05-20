@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Video, Check, X, Loader } from "lucide-react";
+import { Video, Check, X, Loader, Camera } from "lucide-react";
 import { useAccount, useWalletClient, usePublicClient } from "wagmi";
 import { lensClient } from "@/lib/lens";
 import { video, MediaVideoMimeType } from "@lens-protocol/metadata";
@@ -17,7 +17,10 @@ const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
 const CONTRACT_ADDRESS = "0x640C78b3eB3e3E2eDDB7298ab3F09ca5561Af14E";
 
 export default function CreatePage() {
-  const user = typeof window !== "undefined" ? localStorage.getItem("lensAccountAddress") as `0x${string}` : null;
+  const user =
+    typeof window !== "undefined"
+      ? (localStorage.getItem("lensAccountAddress") as `0x${string}`)
+      : null;
   const { address, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -29,28 +32,67 @@ export default function CreatePage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [isCameraOn, setIsCameraOn] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
-  // Setup camera on mount
-  useEffect(() => {
+  const startCamera = async () => {
     if (!address || !isConnected) {
-      console.error("Please connect your wallet first");
+      toast.error("Please connect your wallet first");
       return;
     }
-    const startCamera = async () => {
-      try {
-        const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
-        setStream(mediaStream);
-        if (videoRef.current) videoRef.current.srcObject = mediaStream;
-      } catch (error) {
-        toast.error("Camera access required for recording");
-      }
-    };
+    try {
+      console.log("Requesting camera access...");
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: "user",
+        },
+      });
+      console.log("Camera access granted:", mediaStream);
+      setStream(mediaStream);
+      setIsCameraOn(true);
+    } catch (error) {
+      console.error("Camera access error:", error);
+      toast.error("Camera access required for recording");
+    }
+  };
 
-    startCamera();
-    return () => stream?.getTracks().forEach((track) => track.stop());
-  }, [address, isConnected]);
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach((track) => {
+        track.stop();
+        track.enabled = false;
+      });
+      setStream(null);
+      setIsCameraOn(false);
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
+
+  // Handle video stream when stream or videoRef changes
+  useEffect(() => {
+    if (stream && videoRef.current) {
+      console.log("Setting up video stream...");
+      videoRef.current.srcObject = stream;
+      videoRef.current.onloadedmetadata = () => {
+        console.log("Video metadata loaded");
+        videoRef.current?.play().catch((error) => {
+          console.error("Error playing video:", error);
+        });
+      };
+    }
+  }, [stream, videoRef.current]);
 
   const startRecording = () => {
     if (!stream) return;
@@ -70,6 +112,7 @@ export default function CreatePage() {
   const stopRecording = () => {
     mediaRecorderRef.current?.stop();
     setIsRecording(false);
+    stopCamera();
 
     const blob = new Blob(recordedChunks, { type: "video/mp4" });
     setPreviewUrl(URL.createObjectURL(blob));
@@ -97,7 +140,9 @@ export default function CreatePage() {
             unwatch(); // Stop watching for events
             resolve(hash);
           } else {
-            console.error("SecretCreated event received but no secretHash found");
+            console.error(
+              "SecretCreated event received but no secretHash found"
+            );
             clearTimeout(timeout);
             reject(new Error("No secretHash in event"));
           }
@@ -131,7 +176,7 @@ export default function CreatePage() {
     try {
       // Step 1: Start listening for the event BEFORE making the contract call
       const secretHashPromise = waitForSecretCreatedEvent();
-      
+
       // Step 2: Call createPreSecret on contract
       console.log("Calling createPreSecret...");
       await walletClient.writeContract({
@@ -197,7 +242,7 @@ export default function CreatePage() {
 
       const postId = result.value.hash;
       console.log("Post created with ID:", postId);
-      
+
       // Step 7: Associate post details onchain
       console.log("Associating post details onchain...");
       await walletClient.writeContract({
@@ -235,23 +280,44 @@ export default function CreatePage() {
         </div>
       ) : (
         <div className="aspect-video bg-gray-100 rounded-lg mb-4 overflow-hidden">
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            className="w-full h-full object-cover"
-          />
+          {isCameraOn ? (
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+              style={{ transform: "scaleX(-1)" }} // Mirror the video
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              Camera is off
+            </div>
+          )}
         </div>
       )}
       {!previewUrl ? (
-        <Button
-          onClick={isRecording ? stopRecording : startRecording}
-          className="w-full py-6 text-lg"
-          variant={isRecording ? "destructive" : "default"}
-        >
-          <Video className="mr-2" />
-          {isRecording ? "Stop Recording" : "Start Recording"}
-        </Button>
+        <div className="space-y-4">
+          {!isCameraOn ? (
+            <Button
+              onClick={startCamera}
+              className="w-full py-6 text-lg"
+              variant="default"
+            >
+              <Camera className="mr-2" />
+              Start Camera
+            </Button>
+          ) : (
+            <Button
+              onClick={isRecording ? stopRecording : startRecording}
+              className="w-full py-6 text-lg"
+              variant={isRecording ? "destructive" : "default"}
+            >
+              <Video className="mr-2" />
+              {isRecording ? "Stop Recording" : "Start Recording"}
+            </Button>
+          )}
+        </div>
       ) : (
         <div className="space-y-4">
           <div className="space-y-2">
@@ -269,10 +335,18 @@ export default function CreatePage() {
             />
           </div>
           <div className="flex gap-2">
-            <Button onClick={() => setPreviewUrl(null)} variant="outline" className="flex-1">
+            <Button
+              onClick={() => setPreviewUrl(null)}
+              variant="outline"
+              className="flex-1"
+            >
               <X className="mr-2" /> Retake
             </Button>
-            <Button onClick={handleSubmit} disabled={isProcessing} className="flex-1">
+            <Button
+              onClick={handleSubmit}
+              disabled={isProcessing}
+              className="flex-1"
+            >
               {isProcessing ? (
                 <Loader className="animate-spin mr-2" />
               ) : (
