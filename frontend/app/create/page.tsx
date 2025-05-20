@@ -10,6 +10,7 @@ import { video, MediaVideoMimeType } from "@lens-protocol/metadata";
 import { storageClient } from "@/lib/storageClient";
 import { uri } from "@lens-protocol/client";
 import { post } from "@lens-protocol/client/actions";
+import { useRouter } from "next/navigation";
 
 import SecretManagerABI from "../abi/TruthCastContractAbi.json";
 
@@ -17,6 +18,7 @@ const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
 const CONTRACT_ADDRESS = "0x640C78b3eB3e3E2eDDB7298ab3F09ca5561Af14E";
 
 export default function CreatePage() {
+  const router = useRouter();
   const user =
     typeof window !== "undefined"
       ? (localStorage.getItem("lensAccountAddress") as `0x${string}`)
@@ -240,7 +242,11 @@ export default function CreatePage() {
 
       if (result.isErr()) throw new Error(result.error.message);
 
+      // Get the post ID from the result
       const postId = result.value.hash;
+      if (!postId) {
+        throw new Error("Failed to get post ID from response");
+      }
       console.log("Post created with ID:", postId);
 
       // Step 7: Associate post details onchain
@@ -259,6 +265,9 @@ export default function CreatePage() {
       setTitle("");
       setDescription("");
       setRecordedChunks([]);
+
+      // Redirect to the feed page
+      router.push("/feed");
     } catch (error: any) {
       console.error("Submission failed:", error.message || error);
       toast.error(`Submission failed: ${error.message || "Unknown error"}`);
