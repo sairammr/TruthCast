@@ -2,6 +2,8 @@
 
 A Lens Client Social media that uses steganography to provide AI proof content
 
+[Contract deployment - 0x640C78b3eB3e3E2eDDB7298ab3F09ca5561Af14](https://testnet.lenscan.io/address/0x640C78b3eB3e3E2eDDB7298ab3F09ca5561Af14E)
+
 ## Prerequisites
 
 - Node.js (v14 or higher)
