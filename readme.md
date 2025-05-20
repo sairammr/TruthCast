@@ -1,104 +1,99 @@
-# TruthCast - Lens Protocol Integration
+# TruthCast - Worlds first Steganography Power Social Media
 
-TruthCast is a video platform that allows users to create and share encrypted videos with hidden messages. This project integrates with Lens Protocol to enable social sharing of videos.
+A Lens Client Social media that uses steganography to provide AI proof content
 
-## Features
+## Prerequisites
 
-- Record videos directly in the browser
-- Encrypt videos with hidden messages using steganography
-- Store encrypted videos in Supabase storage
-- Create and manage Lens Protocol profiles
-- Post videos to Lens Protocol
+- Node.js (v14 or higher)
+- npm or yarn
+- Python 3.8 or higher
+- pip (Python package manager)
 
 ## Project Structure
 
-- `frontend/`: Next.js web application
-- `steganography/`: Flask server for video encryption
-- `blockend/`: Smart contracts for Lens Protocol integration
+- `frontend/` - React frontend application
+- `steganography/` - Python backend for steganography operations
+- `blockend/` - Blockchain integration backend
 
-## Setup
+## Setup and Running Instructions
 
-### Prerequisites
+### 1. Backend Setup (Steganography Server)
 
-- Node.js 18+
-- Python 3.8+
-- Supabase account
-- Lens Protocol testnet access
+1. Navigate to the steganography directory:
 
-### Frontend Setup
+   ```bash
+   cd steganography
+   ```
+
+2. Create a Python virtual environment:
+
+   ```bash
+   # On macOS/Linux
+   python3 -m venv venv
+
+   # On Windows
+   python -m venv venv
+   ```
+
+3. Activate the virtual environment:
+
+   ```bash
+   # On macOS/Linux
+   source venv/bin/activate
+
+   # On Windows
+   .\venv\Scripts\activate
+   ```
+
+4. Install Python dependencies:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+5. Start the steganography server:
+   ```bash
+   python app.py
+   ```
+   Copy the server url from the console
+
+### 2. Frontend Setup
 
 1. Navigate to the frontend directory:
-   ```
+
+   ```bash
    cd frontend
    ```
 
 2. Install dependencies:
-   ```
+
+   ```bash
    npm install
+   # or
+   yarn install
    ```
 
-3. Create a `.env.local` file with the following variables:
+3. Create a copy of the `.env.example` file in the frontend directory and name it `.env` update it with required details and also the server url we copied before
+
+4. Start the frontend development server:
+   ```bash
+   npm start
+   # or
+   yarn start
    ```
-   # Server URL for steganography API
-   NEXT_PUBLIC_SERVER_URL=http://localhost:5000
+   The frontend will be available at `http://localhost:3000`
 
-   # WalletConnect Project ID (get one from https://cloud.walletconnect.com/)
-   NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id_here
+## Troubleshooting
 
-   # Supabase configuration
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url_here
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+If you encounter any issues:
 
-   # Lens Protocol configuration
-   # Use 'development' for testnet or 'production' for mainnet
-   NEXT_PUBLIC_LENS_ENVIRONMENT=development
-   ```
+1. Ensure all servers are running (steganography server on port 5000)
+2. Check that the `.env` file has the correct API URL
+3. Verify that all dependencies are installed correctly
+4. Check the browser console for any frontend errors
+5. Check the terminal running the steganography server for any backend errors
+6. Contact @romariokavin on telegram (or) email romario7kavin@gmail.com
 
-4. Start the development server:
-   ```
-   npm run dev
-   ```
+## Support
 
-### Steganography Server Setup
-
-1. Navigate to the steganography directory:
-   ```
-   cd steganography
-   ```
-
-2. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-
-3. Start the Flask server:
-   ```
-   python server.py
-   ```
-
-## Supabase Setup
-
-1. Create a new project in Supabase
-2. Create a storage bucket named `videos` with public access
-3. Copy your project URL and anon key to the `.env.local` file
-
-## Lens Protocol Integration
-
-The application integrates with Lens Protocol to enable:
-
-1. User onboarding with wallet connection
-2. Creating Lens Protocol profiles
-3. Posting videos to Lens Protocol
-4. Viewing Lens Protocol profiles and content
-
-### User Flow
-
-1. Connect wallet using ConnectKit
-2. Create a Lens Protocol profile (if you don't have one)
-3. Record or upload a video
-4. Encrypt the video with a hidden message
-5. Post the video to Lens Protocol
-
-## License
-
-This project is part of the Lens Spring Hackathon submission.
+For any issues or questions, please open an issue in the repository.
