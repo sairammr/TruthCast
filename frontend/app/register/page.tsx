@@ -22,7 +22,6 @@ export default function RegisterPage() {
     bio: "",
     picture: "",
     coverPicture: "",
-    twitter: "",
     tags: [] as string[],
   })
 
@@ -56,13 +55,6 @@ export default function RegisterPage() {
         bio: formData.bio,
         picture: formData.picture,
         coverPicture: formData.coverPicture,
-        attributes: [
-          {
-            key: "twitter",
-            type: MetadataAttributeType.STRING,
-            value: formData.twitter,
-          },
-        ],
       })
 
       // Step 3: Upload Metadata
@@ -140,15 +132,6 @@ export default function RegisterPage() {
                 type="url"
                 value={formData.coverPicture}
                 onChange={(e) => setFormData({ ...formData, coverPicture: e.target.value })}
-                className="w-full p-2 border-2 border-black rounded brutalist-input"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Twitter URL</label>
-              <input
-                type="url"
-                value={formData.twitter}
-                onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
                 className="w-full p-2 border-2 border-black rounded brutalist-input"
               />
             </div>
