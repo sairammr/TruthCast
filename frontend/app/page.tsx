@@ -57,13 +57,13 @@ export default function OnboardingPage() {
             accountOwner: {
               app: process.env.NEXT_PUBLIC_LENS_APP_ID, // App ID
               owner: evmAddress(address),
-              account: result.isOk() ? result.value[0].address : "",
+              account: result.isOk() ? result.value[result.value.length - 1].address : "",
             },
             signMessage: signMessageWith(walletClient),
           })
           const sessionClient = authenticated.isOk() ? authenticated.value : null;
           console.log("Lens authentication successful", { sessionClient });
-          localStorage.setItem("lensAccountAddress", result.isOk() ? result.value[0].address : "");
+          localStorage.setItem("lensAccountAddress", result.isOk() ? result.value[result.value.length - 1].address : "");
           console.log("session client", sessionClient);
           console.log("sessionClient keys:", sessionClient ? Object.keys(sessionClient) : "No session client");
 
